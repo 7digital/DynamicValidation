@@ -1,6 +1,32 @@
-# Build Folders (you can keep bin if you'd like, to store dlls and pdbs)
-bin
 obj
-
-# mstest test results
-TestResults
+bin
+deploy
+*.csproj.user
+*.suo
+*.cache
+*.nupkg
+~$*
+*~
+*ReSharper*
+*.swp
+*.testsettings
+TestResults/*
+*.dbmdl
+Releases/2*
+*.pidb
+*.docstates
+test-results
+apply_config.bat
+NDependOut
+*.dotCover
+*_mm_cache.bin
+*.sln.DotSettings.user
+*.idc
+.DS_Store
+mono-release-*
+test
+test*ml
+build
+*.ncrunchproject
+*.ncrunchsolution.user
+*ncrunch*
