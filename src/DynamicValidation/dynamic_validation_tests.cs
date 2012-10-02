@@ -40,6 +40,12 @@ namespace DynamicValidation {
 		}
 
 		[Test, Ignore("Not yet implemented")]
+		public void terminal_object_is_returned_in_result () {
+			Check.Result result = Check.That(subject).Two.X[Is.Not.Null];
+			Assert.That(result.Target, Is.EqualTo(subject.Two.X));
+		}
+
+		[Test, Ignore("Not yet implemented")]
 		public void assert_two_y_is_null () {
 			Check.Result result = Check.That(subject).Two.Y[Is.Null];
 			Assert.That(result.Success, Is.True);

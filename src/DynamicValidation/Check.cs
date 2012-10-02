@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
+using NUnit.Framework;
 
 namespace DynamicValidation {
 	public class Check : DynamicObject {
@@ -40,8 +41,14 @@ namespace DynamicValidation {
 		}
 
 		public class Result {
+			/// <summary> True if all predicates passed. False if any failed  </summary>
 			public bool Success { get; set; }
+
+			/// <summary> Description of failures if not success. Undefined otherwise. </summary>
 			public IEnumerable<string> Reasons { get; set; }
+
+			/// <summary> Final object tested. If null is encountered before tested object, this will be null </summary>
+			public object Target { get; set; }
 		}
 	}
 }
