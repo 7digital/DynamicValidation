@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
 
@@ -32,6 +33,7 @@ namespace DynamicValidation {
 		}
 
 		public override bool TryGetIndex (GetIndexBinder binder, object[] indexes, out object result) {
+			Console.WriteLine(string.Join(":",binder.CallInfo.ArgumentNames));
 			Console.WriteLine("[" + string.Join(" ", indexes) + "]");
 			result = string.Join(" ", chain) + " " + string.Join(" ", indexes);
 			return true;

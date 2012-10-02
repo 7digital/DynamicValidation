@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using NUnit.Framework;
 
@@ -19,10 +20,23 @@ namespace DynamicValidation {
 			};
 		}
 
+
 		[Test]
 		public void quick_test () {
 			var result = Check.That(subject).can.get.just.about.anything.from.a_dynamic["and", "like", "it"];
 			Assert.That(result, Is.EqualTo("can get just about anything from a_dynamic and like it"));
+		}
+
+		[Test]
+		public void cant_use_method_groups_in_index () {
+			//This doesn't work: // var result = Check.That(subject).something[MethodGroup];
+			var result = Check.That(subject).something[Goes.LikeThis]; // but this is ok.
+		}
+
+		[Test]
+		public void can_get_given_predicate_names () {
+			var result = Check.That(subject).something[hasValue: Is.Not.Null];
+			Console.WriteLine(result);
 		}
 
 		[Test, Ignore("Not yet implemented")]
@@ -67,6 +81,17 @@ namespace DynamicValidation {
 		 *     
 		 * or something like that.
 		 */
+		#region Junk
+		
+		class Goes {
+			public static Func<object, bool> LikeThis { get { return o => true; } }
+		}
+
+		public bool MethodGroup (object thing) {
+			return true;
+		}
+
+		#endregion
 	}
 
 	#region type junk
