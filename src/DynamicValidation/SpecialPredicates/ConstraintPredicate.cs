@@ -5,25 +5,23 @@ namespace DynamicValidation.SpecialPredicates
 {
 	public class ConstraintPredicate : INamedPredicate
 	{
-		readonly IResolveConstraint constraint;
+		readonly Constraint constraint;
 
 		public ConstraintPredicate(IResolveConstraint constraint)
 		{
-			this.constraint = constraint;
+			this.constraint = constraint.Resolve();
 		}
 
 		public bool Matches(object actual, out string message)
 		{
-			var check = constraint.Resolve();
-
-			if (check.Matches(actual))
+			if (constraint.Matches(actual))
 			{
 				message = null;
 				return true;
 			}
 
 			var sw = new TextMessageWriter();
-			check.WriteMessageTo(sw);
+			constraint.WriteMessageTo(sw);
 			message = sw.ToString();
 			return false;
 		}
