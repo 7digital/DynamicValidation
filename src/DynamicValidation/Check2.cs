@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
 using DynamicValidation.Reflection;
+using DynamicValidation.SpecialPredicates;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -64,18 +65,37 @@ namespace DynamicValidation {
 			var result = new Result();
 			finalResult = result;
 			
-			if (indexes.Any(i=> (i is IResolveConstraint || i is INamedPredicate) == false))
-				throw new ArgumentException("All assertions must be IResolveContraint or INamedPredicate");
+			var predicates = AllConstraintsAsPredicates(indexes);
 
-
+			// First, check that the path is valid given the object tree.
+			// try to ignore enumeration stuff as much as possible.
 			AssertPathAndAssignResultTarget(result);
-
 			if ( ! result.Success) return true;
 
-			RunAssertions(result, indexes.OfType<IResolveConstraint>());
-			RunPredicates(result, indexes.OfType<INamedPredicate>());
+			// Next check the validation rules against the object tree.
+			// this is where the [single, any ...] rules come in.
+			RunPredicates(result, predicates);
 
 			return true;
+		}
+
+		IEnumerable<INamedPredicate> AllConstraintsAsPredicates(IEnumerable<object> indexes)
+		{
+			var constraintsAsPredicates = new List<INamedPredicate>();
+			foreach (var index in indexes)
+			{
+				if (index is INamedPredicate)
+				{
+					constraintsAsPredicates.Add((INamedPredicate)index);
+				} else if (index is IResolveConstraint)
+				{
+					constraintsAsPredicates.Add(new ConstraintPredicate((IResolveConstraint)index));
+				} else
+				{
+					throw new ArgumentException("All assertions must be IResolveContraint or INamedPredicate");
+				}
+			}
+			return constraintsAsPredicates;
 		}
 
 		void RunPredicates(Result outp, IEnumerable<INamedPredicate> predicates)
@@ -87,20 +107,6 @@ namespace DynamicValidation {
 			}
 		}
 
-		void RunAssertions(Result outp, IEnumerable<IResolveConstraint> constraints)
-		{
-			foreach (var constraint in constraints)
-			{
-				var check = constraint.Resolve();
-				if ( ! check.Matches(outp.Target))
-				{
-					var sw = new TextMessageWriter();
-					check.WriteMessageTo(sw);
-					outp.FailBecause(sw.ToString());
-				}
-			}
-		}
-
 		void AssertPathAndAssignResultTarget(Result result)
 		{
 			// here we will walk through the 'chain' checking that members are defined
@@ -109,93 +115,62 @@ namespace DynamicValidation {
 			object currentTarget = subject;
 			string pathSoFar = subject.GetType().Name;
 
-			foreach (var step in chain)
+			try
 			{
-				if (currentTarget == null)
+				foreach (var step in chain)
 				{
-					result.FailBecause(pathSoFar + " is null or can't be accessed");
-					return;
+					currentTarget = AssertPathStep(result, step, currentTarget, ref pathSoFar);
 				}
-
-				currentTarget = ShortcutTargetIfSingleItemEnumerable(currentTarget);
-
-				var definitionCount  = currentTarget.CountDefinitions(step.Name);
-
-				if (definitionCount < 1)
-				{
-					if (currentTarget is IEnumerable<object>)
-					{
-						result.FailBecause(pathSoFar + "." + step.Name + " does not have a single child");
-					}
-					else
-						result.FailBecause(pathSoFar + "." + step.Name + " is not a possible path");
-					return;
-				}
-				if (definitionCount > 1)
-				{
-					result.FailBecause(pathSoFar + "." + step.Name + " is ambiguous");
-					return;
-				}
-
-				pathSoFar += "."+step.Name;
-				currentTarget = currentTarget.Get(step.Name);
+			} catch (FastFailureException)
+			{
+				return;
 			}
 
 			result.Target = currentTarget;
 		}
 
-		static object ShortcutTargetIfSingleItemEnumerable(object currentTarget)
+		static object AssertPathStep(Result result, ChainStep step, object currentTarget, ref string pathSoFar)
+		{
+			if (currentTarget == null)
+			{
+				result.FailBecause(pathSoFar + " is null or can't be accessed");
+				throw new FastFailureException();
+			}
+
+			currentTarget = SkipOverEnumerable(currentTarget);
+			if (currentTarget == null)
+			{
+				result.FailBecause(pathSoFar + " has no items");
+				throw new FastFailureException();
+			}
+
+			var definitionCount = currentTarget.CountDefinitions(step.Name);
+
+			if (definitionCount < 1)
+			{
+				if (currentTarget is IEnumerable<object>)
+				{
+					result.FailBecause(pathSoFar + " does not have a single child");
+				}
+				else
+					result.FailBecause(pathSoFar + "." + step.Name + " is not a possible path");
+				throw new FastFailureException();
+			}
+			if (definitionCount > 1)
+			{
+				result.FailBecause(pathSoFar + "." + step.Name + " is ambiguous");
+				throw new FastFailureException();
+			}
+
+			pathSoFar += "." + step.Name;
+			currentTarget = currentTarget.Get(step.Name);
+			return currentTarget;
+		}
+
+		static object SkipOverEnumerable(object currentTarget)
 		{
 			if ( ! (currentTarget is IEnumerable<object>)) return currentTarget;
-
-			try
-			{
-				return ((IEnumerable<object>) currentTarget).Single();
-			} catch
-			{
-				return currentTarget;
-			}
-		}
-		
-		class ChainStep
-		{
-			public string Name { get; set; }
-			public int SingleIndex { get; set; }
-			public ListAssertion ListAssertionType { get; set; }
-			public Func<object, bool> FilterPredicate { get; set; }
-
-			public static ChainStep SimpleStep(string name)
-			{
-				return new ChainStep{
-					Name = name,
-					ListAssertionType = ListAssertion.Single,
-					FilterPredicate = Anything,
-					SingleIndex = 0
-				};
-			}
-
-			public static ChainStep Complex(string name, string assertionName, int index, Func<object, bool> filter)
-			{
-				return new ChainStep{
-					Name = name,
-					ListAssertionType = Guess(assertionName),
-					FilterPredicate = filter,
-					SingleIndex = index
-				};
-			}
-
-			static ListAssertion Guess(string s)
-			{
-				switch (s.ToLowerInvariant())
-				{
-					case "any":return ListAssertion.Any;
-					case "all":return ListAssertion.All;
-					case "single":return ListAssertion.Single;
-					default: return ListAssertion.Single;
-				}
-			}
-
-			public static bool Anything(object arg) { return true; }
+			return ((IEnumerable<object>) currentTarget).FirstOrDefault();
 		}
 
 		public class Result {
@@ -216,16 +191,15 @@ namespace DynamicValidation {
 
 			/// <summary> Description of failures if not success. Undefined otherwise. </summary>
 			public IEnumerable<string> Reasons { get; set; }
+			
+			/// <summary> Single string reason for failure </summary>
+			public string Reason
+			{
+				get { return string.Join(", ", Reasons);}
+			}
 
 			/// <summary> Final object tested. If null is encountered before tested object, this will be null </summary>
 			public object Target { get; set; }
 		}
-	}
-
-	enum ListAssertion
-	{
-		Single = 0, // default!
-		All = 1, 
-		Any = 2
 	}
 }

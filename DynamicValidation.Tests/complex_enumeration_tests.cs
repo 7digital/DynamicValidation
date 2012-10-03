@@ -37,7 +37,7 @@ namespace DynamicValidation.Tests
 		{
 			var result = Check2.That(subject).container("all").a[Is.True];
 
-			Assert.That(result.Success, Is.False);
+			Assert.That(result.Success, Is.False, "check did not fail, but it should have");
 			Assert.That(result.Reasons, Contains.Item("not all X.container.a matched Expected: True\nBut got: False"));
 		}
 
@@ -46,7 +46,7 @@ namespace DynamicValidation.Tests
 		{
 			var result = Check2.That(subject).container("all").b[Is.True];
 
-			Assert.That(result.Success, Is.True, string.Join(" ", result.Reasons));
+			Assert.That(result.Success, Is.True, result.Reason);
 		}
 
 		[Test]
@@ -81,7 +81,7 @@ namespace DynamicValidation.Tests
 			var result = Check2.That(subject).emptyItem("single").a[Is.False];
 
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("X.container has no items"));
+			Assert.That(result.Reasons, Contains.Item("X.emptyItem has no items"));
 		}
 
 		[Test]
@@ -96,10 +96,18 @@ namespace DynamicValidation.Tests
 		public void can_use_predicates_to_filter_deep_enumerations()
 		{
 			var message = new FakeMessage();
-
+ 
 			Func<object, bool> IsBundle = o => ((Release) o).ReleaseTypes.Single().Value == "Bundle";
 			Func<object, bool> IsTrack = o => ((Release) o).ReleaseTypes.Single().Value == "TrackRelease";
-
+/*
+ * under the hood, something like.
+			var icpns = message.Releases.Single(r=>IsBundle(r)).ReleaseIds.Select(r=>r.ICPN);
+			foreach (var icpn in icpns)
+			{
+				var r = Check.That(icpn).Value[Is.Not.Empty];
+				Assert.That(r.Success, Is.True, string.Join(" ", r.Reasons));
+			}
+*/
 			// This would check that we have exactly 1 bundle release that has a non-empty ICPN
 			// and that all track releases have non-empty ISRCs
 			// (note that 'ReleaseIds' has an implicit "single" specification)
