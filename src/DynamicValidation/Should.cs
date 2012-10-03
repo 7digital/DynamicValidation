@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using DynamicValidation.SpecialPredicates;
 using NUnit.Framework.Constraints;
 
 namespace DynamicValidation
@@ -33,9 +35,22 @@ namespace DynamicValidation
 						);
 		}
 
+		public static INamedPredicate Be(Func<object, bool> pred, string message)
+		{
+			return new NamedPredicate(pred, message);
+		}
+
 		public static INamedPredicate AllMatch(IResolveConstraint constraint)
 		{
 			return new EnumerableConstraintPredicate(constraint);
+		}
+
+		public static INamedPredicate AllBe(Func<object, bool> predicate, string message)
+		{
+			return new NamedPredicate(
+						o => ((IEnumerable<object>)o).All(predicate),
+						message
+						);
 		}
 	}
 }

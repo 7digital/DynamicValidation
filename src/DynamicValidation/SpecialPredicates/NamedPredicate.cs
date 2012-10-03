@@ -1,6 +1,6 @@
 using System;
 
-namespace DynamicValidation
+namespace DynamicValidation.SpecialPredicates
 {
 	public class NamedPredicate : INamedPredicate
 	{

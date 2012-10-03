@@ -1,7 +1,7 @@
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
-namespace DynamicValidation
+namespace DynamicValidation.SpecialPredicates
 {
 	public class ConstraintPredicate : INamedPredicate
 	{

@@ -22,6 +22,31 @@ namespace DynamicValidation.Tests
 		}
 		
 		[Test]
+		public void __should_be__checks_target_against_a_lambda()
+		{
+			// passing a lambda in a closure works around the dynamic issues.
+			var pass = Check.That(subject).container[Should.Be(o=>o != null, "Was null, and that's bad!")];
+			var fail = Check.That(subject).container[Should.Be(o=>o == null, "Was not null... unexpected!")];
+
+			Assert.That(pass.Success);
+			Assert.That(fail.Success, Is.False);
+			Assert.That(fail.Reasons, Contains.Item("Was not null... unexpected!"));
+		}
+		
+		[Test]
+		public void __should_all_be__checks_each_item_in_target_enumerable_against_a_lambda()
+		{
+			// passing a lambda in a closure works around the dynamic issues.
+			var pass = Check.That(subject).container[Should.AllBe(o=>o is string, "All items should be strings")];
+			var fail = Check.That(subject).container[Should.AllBe(o=>(string)o == "two", "Expected all items to be 'two'")];
+
+			Assert.That(pass.Success);
+			Assert.That(fail.Success, Is.False);
+			Assert.That(fail.Reasons, Contains.Item("Expected all items to be 'two'"));
+		}
+		
+		
+		[Test]
 		public void minimum_item_count()
 		{
 			var pass = Check.That(subject).container[Should.HaveAtLeast(2)];

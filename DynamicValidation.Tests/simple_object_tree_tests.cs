@@ -1,4 +1,5 @@
 ﻿using System;
+using DynamicValidation.SpecialPredicates;
 using NUnit.Framework;
 // ReSharper disable PossibleNullReferenceException
 #pragma warning disable 168
