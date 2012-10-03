@@ -1,9 +1,11 @@
 ﻿using System;
 using NUnit.Framework;
+// ReSharper disable PossibleNullReferenceException
+#pragma warning disable 168
 
 namespace DynamicValidation.Tests {
 	[TestFixture]
-	public class dynamic_validation_tests {
+	public class simple_object_tree_tests {
 		BaseThing subject;
 
 		[SetUp]
@@ -28,8 +30,8 @@ namespace DynamicValidation.Tests {
 
 		[Test]
 		public void can_get_given_predicate_names () {
-			var result = Check.That(subject).One[has_value: Is.Not.Null];
-			Console.WriteLine(result);
+			var result = Check.That(subject).One[Is.Not.Null];
+			Assert.That(result.Success, Is.True);
 		}
 
 		[Test]

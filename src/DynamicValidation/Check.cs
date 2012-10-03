@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -32,6 +31,12 @@ namespace DynamicValidation {
 		}
 
 
+		public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+		{
+			result = Add(binder.Name);
+			return true;
+		}
+
 		public override bool TryGetMember (GetMemberBinder binder, out object result) {
 			// No actual access here, just record the request.
 			result = Add(binder.Name);
@@ -58,13 +63,10 @@ namespace DynamicValidation {
 
 		void RunPredicates(Result outp, IEnumerable<INamedPredicate> predicates)
 		{
-			int i = 1;
 			foreach (var predicate in predicates)
 			{
 				string message;
-				if ( ! predicate.Matches(outp.Target, out message)) 
-					outp.FailBecause(message);
-				i++;
+				if ( ! predicate.Matches(outp.Target, out message)) outp.FailBecause(message);
 			}
 		}
 
@@ -149,8 +151,11 @@ namespace DynamicValidation {
 			if (target == null) return 0;
 			var type = target.GetType();
 
-			var members = type.GetMembers();
-			return members.Count(m=>m.Name == memberName);
+			var fieldNames = type.GetFields().Select(f=>f.Name);
+			var propertyNames = type.GetProperties().Select(p=>p.Name);
+
+			return fieldNames.Count(name=>name == memberName)
+				+ propertyNames.Count(name=>name == memberName);
 		}
 		
 		public static object Get(this object target, string memberName)
