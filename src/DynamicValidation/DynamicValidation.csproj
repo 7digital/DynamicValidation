@@ -45,8 +45,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Check.cs" />
-    <Compile Include="dynamic_validation_tests.cs" />
+    <Compile Include="Reflection\BackingFieldResolver.cs" />
+    <Compile Include="Reflection\ByteBuffer.cs" />
+    <Compile Include="Reflection\Disassembler.cs" />
+    <Compile Include="Reflection\ILPattern.cs" />
+    <Compile Include="Reflection\Image.cs" />
+    <Compile Include="Reflection\Instruction.cs" />
+    <Compile Include="Reflection\MethodBodyReader.cs" />
+    <Compile Include="Tests\dynamic_validation_tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="INamedPredicate.cs" />
+    <Compile Include="NamedPredicate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
