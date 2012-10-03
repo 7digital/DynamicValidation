@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using NUnit.Framework;
 // ReSharper disable PossibleNullReferenceException
 #pragma warning disable 168
@@ -34,7 +33,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void can_assert_on_enumerables()
 		{
-			var r1 = Check.That(subject).SingleThing.ListOfK[Should.HaveThreeItems];
+			var r1 = Check.That(subject).SingleThing.ListOfK[Should.Have(3)];
 			Assert.That(r1.Success);
 		}
 
@@ -42,7 +41,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void can_assert_on_enumerables_and_their_results()
 		{
-			Check.Result r1 = Check.That(subject).SingleThing.ListOfK[Should.HaveThreeItems];
+			Check.Result r1 = Check.That(subject).SingleThing.ListOfK[Should.Have(3)];
 
 			var r2 = Check.First(r1.Target).Value[Is.EqualTo("Hello, Bob")];
 
@@ -76,28 +75,16 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void can_NOT_assert_that_all_children_validate()
 		{
-			// Plan is to be able to do something like this:
-			//     Check.That(subject).SingleThing.ListOfK("all").Value[Is.StringContaining("Hello")];
-			// but for now it just fails.
-			var result = Check.That(subject).SingleThing.ListOfK.Value[Is.StringContaining("Hello")];
+			// Plan is to be able to specify "all", "single", "any", "first", n-th
+			var example = Check.That(subject).SingleThing.ListOfK("all").Value[Is.StringContaining("Hello")];
+
+			// 3rd item of ListOfK...
+			var result = Check.That(subject).SingleThing.ListOfK(2).Value[Is.EqualTo("Hello, Alice")];
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("ComplexThing.SingleThing.ListOfK.Value is inside an enumerable"));
 		}
 
-		public class Should
-		{
-			public static NamedPredicate HaveThreeItems
-			{
-				get
-				{
-					return new NamedPredicate(
-						o => ((IEnumerable<K>)o).Count() == 3,
-						"Should have three items exactly"
-						);
-				}
-			}
-		}
 	}
 
 	#region type junk

@@ -54,6 +54,7 @@ namespace DynamicValidation {
 			return new Check(target.First());
 		}
 
+		#region Building Chain
 		Check (object subject) {
 			this.subject = subject;
 			chain = new List<string>();
@@ -70,6 +71,11 @@ namespace DynamicValidation {
 
 		public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
 		{
+			/*if (args.Length == 1)
+			{
+				if (args[0] is int) Console.WriteLine("Would look at item #"+(((int)args[0])+1));
+				else Console.WriteLine("Would look at "+args[0]+" item(s)");
+			}*/
 			result = Add(binder.Name);
 			return true;
 		}
@@ -79,6 +85,7 @@ namespace DynamicValidation {
 			result = Add(binder.Name);
 			return true;
 		}
+		#endregion
 
 		public override bool TryGetIndex (GetIndexBinder binder, object[] indexes, out object finalResult) {
 			var result = new Result();
@@ -198,35 +205,6 @@ namespace DynamicValidation {
 
 			/// <summary> Final object tested. If null is encountered before tested object, this will be null </summary>
 			public object Target { get; set; }
-		}
-	}
-
-	internal static class TypeExtensions
-	{
-		public static int CountDefinitions(this object target, string memberName)
-		{
-			if (target == null) return 0;
-			var type = target.GetType();
-
-			var fieldNames = type.GetFields().Select(f=>f.Name);
-			var propertyNames = type.GetProperties().Select(p=>p.Name);
-
-			return fieldNames.Count(name=>name == memberName)
-				+ propertyNames.Count(name=>name == memberName);
-		}
-		
-		public static object Get(this object target, string memberName)
-		{
-			var field = target.GetType().GetField(memberName);
-			if (field == null)
-			{
-				var prop = target.GetType().GetProperty(memberName);
-				field = prop.GetBackingField();
-			}
-
-			if (field == null) return null;
-
-			return field.GetValue(target);
 		}
 	}
 }

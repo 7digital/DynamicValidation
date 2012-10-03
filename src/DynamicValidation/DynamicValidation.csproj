@@ -55,6 +55,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="INamedPredicate.cs" />
     <Compile Include="NamedPredicate.cs" />
+    <Compile Include="Reflection\TypeExtensions.cs" />
+    <Compile Include="Should.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
