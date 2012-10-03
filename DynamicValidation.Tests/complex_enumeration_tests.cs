@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace DynamicValidation.Tests
 {
-	[TestFixture]
+	[TestFixture, Explicit("Failing tests for upcoming features")]
 	public class complex_enumeration_tests
 	{
 		readonly object subject = new X

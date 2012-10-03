@@ -27,17 +27,17 @@ for failure which is the name of the predicates that failed.
 If any part of the object tree is null except the last item
 then that's a failure with it's own message.
 
-Not entirely sure how to handle lists/enumerations. Probably
-something like
+To check each item in an enumerable, you can use
 ```
-    Check.That(thing).a.b(Has.All)[...]
+var result = Check.That(subject).container[Should.AllMatch(Is.Not.Null)];
 ```
-If the validation needs to check both aspect of an enumerable
-and it's contents, should split the tests up.
+
+If the validation needs to check children of an enumerable
+should be able to define like this:
 ```
-    Check.That(thing).a.b[Has.AtLeastOne]
+    Check.That(thing).a.b[Should.HaveAtLeast(1)]
     Check.That(thing).a.b("all").c[Is.NotEmpty]
     Check.That(thing).a.b("first").c.d[Is.NotEmpty]
     Check.That(thing).a.b("single").c.d[Is.NotEmpty]
 ```
-or something like that.
+but it's not implemented yet.

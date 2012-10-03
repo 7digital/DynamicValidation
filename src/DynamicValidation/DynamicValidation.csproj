@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Check.cs" />
+    <Compile Include="ConstraintPredicate.cs" />
     <Compile Include="Reflection\BackingFieldResolver.cs" />
     <Compile Include="Reflection\ByteBuffer.cs" />
     <Compile Include="Reflection\Disassembler.cs" />

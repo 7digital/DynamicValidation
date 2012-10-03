@@ -42,5 +42,13 @@ namespace DynamicValidation.Tests
 			Assert.That(fail.Success, Is.False);
 			Assert.That(fail.Reasons, Contains.Item("Should have less than 3 items"));
 		}
+
+		[Test]
+		public void can_check_each_item_of_a_list()
+		{
+			var result = Check.That(subject).container[Should.AllMatch(Is.Not.Null)];
+
+			Assert.That(result.Success, Is.True, string.Join(" ", result.Reasons));
+		}
 	}
 }
