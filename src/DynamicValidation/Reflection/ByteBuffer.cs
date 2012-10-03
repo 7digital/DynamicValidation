@@ -28,7 +28,7 @@
 
 using System;
 
-namespace Mono.Reflection {
+namespace DynamicValidation.Reflection {
 
 	class ByteBuffer {
 

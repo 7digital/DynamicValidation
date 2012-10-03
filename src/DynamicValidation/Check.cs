@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
-using Mono.Reflection;
+using DynamicValidation.Reflection;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
@@ -11,10 +11,16 @@ namespace DynamicValidation {
 		readonly object subject;
 		readonly List<string> chain;
 
+		/// <summary>
+		/// Start an assertion on the subject
+		/// </summary>
 		public static dynamic That (object subject) {
 			return new Check(subject);
 		}
 
+		/// <summary>
+		/// Start an assertion on the only item in an enumerable
+		/// </summary>
 		public static dynamic Single(object target)
 		{
 			return target is IEnumerable<object> 
@@ -22,10 +28,17 @@ namespace DynamicValidation {
 				: new Check(target);
 		}
 
+		/// <summary>
+		/// Start an assertion on the only item in an enumerable
+		/// </summary>
 		public static dynamic Single(IEnumerable<object> target)
 		{
 			return new Check(target.Single());
 		}
+
+		/// <summary>
+		/// Start an assertion on the first item in an enumerable
+		/// </summary>
 		public static dynamic First(object target)
 		{
 			return target is IEnumerable<object> 
@@ -33,6 +46,9 @@ namespace DynamicValidation {
 				: new Check(target);
 		}
 
+		/// <summary>
+		/// Start an assertion on the first item in an enumerable
+		/// </summary>
 		public static dynamic First(IEnumerable<object> target)
 		{
 			return new Check(target.First());
@@ -51,7 +67,6 @@ namespace DynamicValidation {
 		dynamic Add (string name) {
 			return new Check(subject, chain, name);
 		}
-
 
 		public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
 		{
@@ -186,7 +201,7 @@ namespace DynamicValidation {
 		}
 	}
 
-	public static class TypeExtensions
+	internal static class TypeExtensions
 	{
 		public static int CountDefinitions(this object target, string memberName)
 		{

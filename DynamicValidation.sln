@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicValidation", "src\DynamicValidation\DynamicValidation.csproj", "{CE77EC6F-A68E-44A2-8889-74EAC2672F74}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DynamicValidation.Tests", "DynamicValidation.Tests\DynamicValidation.Tests.csproj", "{D96B1468-49EB-4A03-A802-589B6BFE91E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{CE77EC6F-A68E-44A2-8889-74EAC2672F74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CE77EC6F-A68E-44A2-8889-74EAC2672F74}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CE77EC6F-A68E-44A2-8889-74EAC2672F74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D96B1468-49EB-4A03-A802-589B6BFE91E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D96B1468-49EB-4A03-A802-589B6BFE91E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D96B1468-49EB-4A03-A802-589B6BFE91E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D96B1468-49EB-4A03-A802-589B6BFE91E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

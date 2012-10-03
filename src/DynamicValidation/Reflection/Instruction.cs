@@ -29,7 +29,7 @@
 using System.Reflection.Emit;
 using System.Text;
 
-namespace Mono.Reflection {
+namespace DynamicValidation.Reflection {
 
 	public sealed class Instruction {
 		readonly int offset;

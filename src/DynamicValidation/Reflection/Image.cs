@@ -29,7 +29,7 @@
 using System;
 using System.IO;
 
-namespace Mono.Reflection {
+namespace DynamicValidation.Reflection {
 
 	public sealed class Image : IDisposable {
 		readonly long position;

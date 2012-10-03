@@ -30,7 +30,7 @@ using System;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Mono.Reflection {
+namespace DynamicValidation.Reflection {
 
 	public static class BackingFieldResolver {
 

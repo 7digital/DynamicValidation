@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NUnit.Framework;
+// ReSharper disable PossibleNullReferenceException
+#pragma warning disable 168
 
 namespace DynamicValidation.Tests
 {
@@ -12,9 +13,12 @@ namespace DynamicValidation.Tests
 		ComplexThing subject;
 
 		[SetUp]
-		public void Setup () {
-			subject = new ComplexThing {
-				SingleThing = new J {
+		public void Setup()
+		{
+			subject = new ComplexThing
+			{
+				SingleThing = new J
+				{
 					ListOfK = new List<K> {
 						new K{Value = "Hello, Bob"},
 						new K{Value = "Hello, Eve"},
@@ -30,49 +34,40 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void can_assert_on_enumerables()
 		{
-			var HasThreeItems = new NamedPredicate(
-				o => (o as IEnumerable<K>).Count() == 3,
-				"Should have three items exactly"
-				);
-
-			var r1 = Check.That(subject).SingleThing.ListOfK[HasThreeItems];
+			var r1 = Check.That(subject).SingleThing.ListOfK[Should.HaveThreeItems];
 			Assert.That(r1.Success);
 		}
 
-		
+
 		[Test]
 		public void can_assert_on_enumerables_and_their_results()
 		{
-			var hasThreeItems = new NamedPredicate(
-				o => ((IEnumerable<K>)o).Count() == 3,
-				"Should have three items exactly"
-				);
-
-			Check.Result r1 = Check.That(subject).SingleThing.ListOfK[hasThreeItems];
+			Check.Result r1 = Check.That(subject).SingleThing.ListOfK[Should.HaveThreeItems];
 
 			var r2 = Check.First(r1.Target).Value[Is.EqualTo("Hello, Bob")];
-			
+
 			Assert.That(r1.Success);
 			Assert.That(r2.Success);
 		}
 
 		[Test]
-		public void can_assert_on_single_enumerables ()
+		public void can_assert_on_single_enumerables()
 		{
 			var result = Check.Single(subject.JustOneThingInAList).Value[Is.EqualTo("Woop!")];
 			Assert.That(result.Success);
 		}
 
 		[Test]
-		public void throws_if_single_called_on_non_single_list ()
+		public void throws_if_single_called_on_non_single_list()
 		{
-			Assert.Throws<InvalidOperationException>(()=> {
+			Assert.Throws<InvalidOperationException>(() =>
+			{
 				var x = Check.Single(subject.SingleThing.ListOfK).Value[Is.EqualTo("Woop!")];
 			});
 		}
 
 		[Test]
-		public void can_shortcut_enumerables_when_it_contains_one_item ()
+		public void can_shortcut_enumerables_when_it_contains_one_item()
 		{
 			var result = Check.Single(subject).JustOneThingInAList.Value[Is.EqualTo("Woop!")];
 			Assert.That(result.Success, string.Join(" ", result.Reasons));
@@ -88,6 +83,20 @@ namespace DynamicValidation.Tests
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("ComplexThing.SingleThing.ListOfK.Value is inside an enumerable"));
+		}
+
+		public class Should
+		{
+			public static NamedPredicate HaveThreeItems
+			{
+				get
+				{
+					return new NamedPredicate(
+						o => ((IEnumerable<K>)o).Count() == 3,
+						"Should have three items exactly"
+						);
+				}
+			}
 		}
 	}
 

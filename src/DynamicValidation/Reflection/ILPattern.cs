@@ -32,7 +32,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Mono.Reflection {
+namespace DynamicValidation.Reflection {
 
 	public abstract class ILPattern {
 

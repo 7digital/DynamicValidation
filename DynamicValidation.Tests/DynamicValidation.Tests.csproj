@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{CE77EC6F-A68E-44A2-8889-74EAC2672F74}</ProjectGuid>
+    <ProjectGuid>{D96B1468-49EB-4A03-A802-589B6BFE91E4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DynamicValidation</RootNamespace>
-    <AssemblyName>DynamicValidation</AssemblyName>
+    <RootNamespace>DynamicValidation.Tests</RootNamespace>
+    <AssemblyName>DynamicValidation.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -32,7 +32,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="nunit.framework, Version=2.6.1.12217, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NUnit.2.6.1\lib\nunit.framework.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -44,20 +43,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Check.cs" />
-    <Compile Include="Reflection\BackingFieldResolver.cs" />
-    <Compile Include="Reflection\ByteBuffer.cs" />
-    <Compile Include="Reflection\Disassembler.cs" />
-    <Compile Include="Reflection\ILPattern.cs" />
-    <Compile Include="Reflection\Image.cs" />
-    <Compile Include="Reflection\Instruction.cs" />
-    <Compile Include="Reflection\MethodBodyReader.cs" />
+    <Compile Include="enumerables_in_tree_tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="INamedPredicate.cs" />
-    <Compile Include="NamedPredicate.cs" />
+    <Compile Include="simple_object_tree_tests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\src\DynamicValidation\DynamicValidation.csproj">
+      <Project>{CE77EC6F-A68E-44A2-8889-74EAC2672F74}</Project>
+      <Name>DynamicValidation</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
