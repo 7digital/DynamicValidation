@@ -34,7 +34,7 @@ namespace DynamicValidation.Tests
 		public void can_assert_on_enumerables()
 		{
 			var r1 = Check.That(subject).SingleThing.ListOfK[Should.Have(3)];
-			Assert.That(r1.Success);
+			Assert.That(r1.Success, Is.True, r1.Reason);
 		}
 
 		/*
@@ -72,7 +72,7 @@ namespace DynamicValidation.Tests
 			Assert.That(result.Success, string.Join(" ", result.Reasons));
 		}*/
 
-		[Test, Ignore()]
+		[Test]
 		public void can_assert_that_nth_child_validates()
 		{
 			var result = Check.That(subject).SingleThing.ListOfK(2).Value[Is.EqualTo("Hello, Alice")];

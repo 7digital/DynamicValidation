@@ -63,7 +63,7 @@ namespace DynamicValidation.Tests
 			var result = Check.That(subject).container("any").b[Is.False];
 
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("no X.container.b matched Expected: True\nBut got: False"));
+			Assert.That(result.Reasons, Contains.Item("no children of X.container validated successfully"));
 		}
 
 		[Test]
@@ -72,7 +72,7 @@ namespace DynamicValidation.Tests
 			var result = Check.That(subject).container("single").a[Is.False];
 
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("X.container has more than one item"));
+			Assert.That(result.Reasons, Contains.Item("X.container has length of 3, expected 1"));
 		}
 
 		[Test]
@@ -99,23 +99,15 @@ namespace DynamicValidation.Tests
  
 			Func<object, bool> IsBundle = o => ((Release) o).ReleaseTypes.Single().Value == "Bundle";
 			Func<object, bool> IsTrack = o => ((Release) o).ReleaseTypes.Single().Value == "TrackRelease";
-/*
- * under the hood, something like.
-			var icpns = message.Releases.Single(r=>IsBundle(r)).ReleaseIds.Select(r=>r.ICPN);
-			foreach (var icpn in icpns)
-			{
-				var r = Check.That(icpn).Value[Is.Not.Empty];
-				Assert.That(r.Success, Is.True, string.Join(" ", r.Reasons));
-			}
-*/
-			// This would check that we have exactly 1 bundle release that has a non-empty ICPN
+
+			// This checks that we have exactly 1 bundle release that has a non-empty ICPN
 			// and that all track releases have non-empty ISRCs
 			// (note that 'ReleaseIds' has an implicit "single" specification)
 			var result1 = Check.That(message).Releases("single", IsBundle).ReleaseIds.ICPN.Value[Is.Not.Empty];
 			var result2 = Check.That(message).Releases("all", IsTrack).ReleaseIds.ISRC.Value[Is.Not.Empty];
 
-			Assert.That(result1.Success, Is.True, string.Join(" ", result1.Reasons));
-			Assert.That(result2.Success, Is.True, string.Join(" ", result2.Reasons));
+			Assert.That(result1.Success, Is.True, "Bundle ICPN: "+result1.Reason);
+			Assert.That(result2.Success, Is.True, "Track ISRC: "+result2.Reason);
 		}
 	}
 

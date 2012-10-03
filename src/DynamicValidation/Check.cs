@@ -41,7 +41,7 @@ namespace DynamicValidation {
 			switch (args.Length)
 			{
 				case 1: // either like `list(1)` or `list("any")`
-					if (args[0] is int) result = Add(ChainStep.Complex(binder.Name, "single", (int)args[0], ChainStep.Anything));
+					if (args[0] is int) result = Add(ChainStep.Complex(binder.Name, "index", (int)args[0], ChainStep.Anything));
 					else result = Add(ChainStep.Complex(binder.Name, args[0].ToString(), 0, ChainStep.Anything));
 					break;
 				case 2: // like `list("all", o => o.something != null)`
@@ -93,13 +93,76 @@ namespace DynamicValidation {
 
 			// we only actually run our predicates once we hit the end of the chain.
 
-			while (remainingChain.Count > 0)
+			while (remainingChain.Count > 1)
 			{
-				result.Target = result.Target.Get(remainingChain.First().Name);
-				path += "." + remainingChain.First().Name;
+				var step = remainingChain.First();
 				remainingChain = remainingChain.Skip(1).ToList();
+
+				var next = result.Target.Get(step.Name);
+				var listPath = path + "." + step.Name;
+
+				if (next is IEnumerable<object>) {
+					var container = ((IEnumerable<object>)next).Where(step.FilterPredicate).ToArray();
+					switch (step.ListAssertionType) {
+						case ListAssertion.Single:
+							if (container.Length != 1) {
+								result.FailBecause(listPath + " has length of " + container.Length + ", expected 1");
+								return;
+							}
+							next = container[0];
+							break;
+
+						case ListAssertion.Index:
+							if (step.SingleIndex < 0 || step.SingleIndex >= container.Length) {
+								result.FailBecause(listPath + " has length of " + container.Length + ", tried to access index " + step.SingleIndex);
+								return;
+							}
+							path += "[" + step.SingleIndex + "]";
+							next = container[step.SingleIndex];
+							break;
+
+						case ListAssertion.All:
+							var i = 0;
+							foreach (var route in container) {
+								var cleanResult = new Result {Target = route};
+								var localPath = listPath + "[" + i + "]";
+								RunPredicates(remainingChain, localPath, cleanResult, predicates);
+								result.Merge(cleanResult);
+								i++;
+							}
+							return; // should have walked entire rest of tree.
+
+						case ListAssertion.Any:
+							var j = 0;
+							var successCount = 0;
+							var subResult = new Result();
+							foreach (var route in container) {
+								var cleanResult = new Result {Target = route};
+								var localPath = listPath + "[" + j + "]";
+								RunPredicates(remainingChain, localPath, cleanResult, predicates);
+								subResult.Merge(cleanResult);
+								if (cleanResult.Success) successCount++;
+								j++;
+							}
+							if (successCount < 1) {
+								result.FailBecause("no children of " + listPath + " validated successfully");
+								result.Merge(subResult);
+							}
+							return; // should have walked entire rest of tree.
+
+						default: throw new Exception("Unexpected list assertion type");
+					}
+				}
+
+				result.Target = next;
+				path += "." + step.Name;
 			}
 			Console.WriteLine("Full path was "+path);
+
+			if (remainingChain.Count == 1) {
+				var step = remainingChain[0];
+				result.Target =  result.Target.Get(step.Name);
+			}
 
 			foreach (var predicate in predicates)
 			{
@@ -215,8 +278,12 @@ namespace DynamicValidation {
 				get { return string.Join(", ", Reasons);}
 			}
 
-			/// <summary> Final object tested. If null is encountered before tested object, this will be null </summary>
-			public object Target { get; set; }
+			internal object Target { get; set; }
+
+			public void Merge(Result otherResult) {
+				Success &= otherResult.Success;
+				Reasons = Reasons.Union(otherResult.Reasons).ToList();
+			}
 		}
 	}
 }

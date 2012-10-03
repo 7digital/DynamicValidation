@@ -4,6 +4,7 @@ namespace DynamicValidation
 	{
 		Single = 0, // default!
 		All = 1, 
-		Any = 2
+		Any = 2,
+		Index = 3
 	}
 }
