@@ -11,11 +11,8 @@ constraints.
 
 Todo
 ----
-* `Check.Results` should be easy to merge, and should be able to spit out a single string output.
 * Should not be sensitive about NUnit.Framework version (if possible) -- maybe reflect stuff out?
   Maybe remove IResoveConstraint stuff?
-* Work on handling nested enumerables
-* filter enum on predicate
 
 Example
 -------

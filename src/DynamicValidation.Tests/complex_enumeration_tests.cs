@@ -89,7 +89,7 @@ namespace DynamicValidation.Tests
 		{
 			var result = Check.That(subject).singleItem("single").a[Is.True];
 
-			Assert.That(result.Success, Is.True, string.Join(" ", result.Reasons));
+			Assert.That(result.Success, Is.True, result.Reason);
 		}
 
 		[Test]

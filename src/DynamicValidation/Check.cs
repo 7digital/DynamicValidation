@@ -12,15 +12,15 @@ namespace DynamicValidation {
 	/// Experimental version of CHECK.
 	/// </summary>
 	public class Check : DynamicObject {
-
-		readonly object subject;
-		readonly List<ChainStep> chain;
-
 		public static dynamic That (object subject) {
 			return new Check(subject);
 		}
 
 		#region Building Chain
+
+		readonly object subject;
+		readonly List<ChainStep> chain;
+
 		Check (object subject) {
 			this.subject = subject;
 			chain = new List<ChainStep>();
@@ -60,6 +60,7 @@ namespace DynamicValidation {
 		}
 		#endregion
 
+		#region Testing object tree
 		public override bool TryGetIndex (GetIndexBinder binder, object[] indexes, out object finalResult) {
 			var result = new Result();
 			finalResult = result;
@@ -168,7 +169,6 @@ namespace DynamicValidation {
 				result.Target = next;
 				path = pathHere;
 			}
-			Console.WriteLine("Full path was "+path);
 
 			if (remainingChain.Count == 1) {
 				var step = remainingChain[0];
@@ -188,7 +188,6 @@ namespace DynamicValidation {
 			}
 		}
 
-
 		static IEnumerable<INamedPredicate> AllConstraintsAsPredicates(IEnumerable<object> indexes)
 		{
 			var constraintsAsPredicates = new List<INamedPredicate>();
@@ -207,12 +206,7 @@ namespace DynamicValidation {
 			}
 			return constraintsAsPredicates;
 		}
-		
-		static object SkipOverEnumerable(object currentTarget)
-		{
-			if ( ! (currentTarget is IEnumerable<object>)) return currentTarget;
-			return ((IEnumerable<object>) currentTarget).FirstOrDefault();
-		}
+		#endregion
 
 		public class Result {
 			public Result()

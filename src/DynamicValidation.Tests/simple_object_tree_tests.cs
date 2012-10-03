@@ -27,14 +27,18 @@ namespace DynamicValidation.Tests {
 			// This doesn't work:
 			//     Check.That(subject).One[MethodGroup];
 			// it's just a restriction of C#
-			var x = Check.That(subject).One[ItShould.BeLikeThis];
+			// can work around it with "Should.Be"
+			var x = Check.That(subject).One[Should.Be(MethodGroup, "ok")];
 			Assert.Pass();
 		}
 
 		[Test]
-		public void can_get_given_predicate_names () {
-			var result = Check.That(subject).One[Is.Not.Null];
-			Assert.That(result.Success, Is.True);
+		public void can_get_given_predicate_messages () {
+			var result = Check.That(subject).One[Is.Null];
+			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reasons, Contains.Item(@"BaseThing.One   Expected: null
+  But was:  <DynamicValidation.Tests.A>
+"));
 		}
 
 		[Test]
@@ -91,11 +95,6 @@ namespace DynamicValidation.Tests {
 		}
 
 		#region Junk
-		
-		public class ItShould {
-			public static INamedPredicate BeLikeThis { get { return 
-				new NamedPredicate(o => true, "test"); } }
-		}
 
 		public bool MethodGroup (object thing) {
 			return true;
