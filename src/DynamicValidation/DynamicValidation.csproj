@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Check.cs" />
+    <Compile Include="Check2.cs" />
     <Compile Include="SpecialPredicates\ConstraintPredicate.cs" />
     <Compile Include="SpecialPredicates\EnumerableConstraintPredicate.cs" />
     <Compile Include="Reflection\BackingFieldResolver.cs" />

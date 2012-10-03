@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using NUnit.Framework;
 
 namespace DynamicValidation.Tests
 {
-	[TestFixture, Explicit("Failing tests for upcoming features")]
+	[TestFixture]//, Explicit("Failing tests for upcoming features")]
 	public class complex_enumeration_tests
 	{
 		readonly object subject = new X
@@ -25,7 +27,7 @@ namespace DynamicValidation.Tests
 		[TestCase(2, true)]
 		public void can_check_that_nth_item_validates(int n, bool a_value)
 		{
-			var result = Check.That(subject).container(n).a[Is.EqualTo(a_value)];
+			var result = Check2.That(subject).container(n).a[Is.EqualTo(a_value)];
 
 			Assert.That(result.Success, Is.True, string.Join(" ", result.Reasons));
 		}
@@ -33,7 +35,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void all_child_validation_fails_correctly()
 		{
-			var result = Check.That(subject).container("all").a[Is.True];
+			var result = Check2.That(subject).container("all").a[Is.True];
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("not all X.container.a matched Expected: True\nBut got: False"));
@@ -42,7 +44,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void all_child_validation_passes_correctly()
 		{
-			var result = Check.That(subject).container("all").b[Is.True];
+			var result = Check2.That(subject).container("all").b[Is.True];
 
 			Assert.That(result.Success, Is.True, string.Join(" ", result.Reasons));
 		}
@@ -50,7 +52,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void any_child_validation_passes_correctly()
 		{
-			var result = Check.That(subject).container("any").a[Is.True];
+			var result = Check2.That(subject).container("any").a[Is.True];
 
 			Assert.That(result.Success, Is.True);
 		}
@@ -58,7 +60,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void any_child_validation_fails_correctly()
 		{
-			var result = Check.That(subject).container("any").b[Is.False];
+			var result = Check2.That(subject).container("any").b[Is.False];
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("no X.container.b matched Expected: True\nBut got: False"));
@@ -67,7 +69,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void single_child_validation_fails_on_multiple_items()
 		{
-			var result = Check.That(subject).container("single").a[Is.False];
+			var result = Check2.That(subject).container("single").a[Is.False];
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("X.container has more than one item"));
@@ -76,7 +78,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void single_child_validation_fails_on_no_items()
 		{
-			var result = Check.That(subject).emptyItem("single").a[Is.False];
+			var result = Check2.That(subject).emptyItem("single").a[Is.False];
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("X.container has no items"));
@@ -85,16 +87,87 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void single_child_validation_passes_with_one_item()
 		{
-			var result = Check.That(subject).singleItem("single").a[Is.True];
+			var result = Check2.That(subject).singleItem("single").a[Is.True];
 
 			Assert.That(result.Success, Is.True, string.Join(" ", result.Reasons));
 		}
+
+		[Test]
+		public void can_use_predicates_to_filter_deep_enumerations()
+		{
+			var message = new FakeMessage();
+
+			Func<object, bool> IsBundle = o => ((Release) o).ReleaseTypes.Single().Value == "Bundle";
+			Func<object, bool> IsTrack = o => ((Release) o).ReleaseTypes.Single().Value == "TrackRelease";
+
+			// This would check that we have exactly 1 bundle release that has a non-empty ICPN
+			// and that all track releases have non-empty ISRCs
+			// (note that 'ReleaseIds' has an implicit "single" specification)
+			var result1 = Check2.That(message).Releases("single", IsBundle).ReleaseIds.ICPN.Value[Is.Not.Empty];
+			var result2 = Check2.That(message).Releases("all", IsTrack).ReleaseIds.ISRC.Value[Is.Not.Empty];
+
+			Assert.That(result1.Success, Is.True, string.Join(" ", result1.Reasons));
+			Assert.That(result2.Success, Is.True, string.Join(" ", result2.Reasons));
+		}
 	}
 
-	class X
+	#region Type junk
+	public class FakeMessage
+	{
+		public IList<Release> Releases { get; set; }
+
+		public FakeMessage()
+		{
+			Releases = new List<Release> {
+				new Release{
+					ReleaseTypes = new List<ReleaseType>{new ReleaseType{Value = "Bundle"}},
+					ReleaseIds = new List<ReleaseId> {
+						new ReleaseId{ICPN = new ValueThing{Value="bundle icpn"}}
+					}
+				},
+				new Release{
+					ReleaseTypes = new List<ReleaseType>{new ReleaseType{Value = "TrackRelease"}},
+					ReleaseIds = new List<ReleaseId> {
+						new ReleaseId{ISRC = new ValueThing{Value="first track isrc"}}
+					}
+				},
+				new Release{
+					ReleaseTypes = new List<ReleaseType>{new ReleaseType{Value = "TrackRelease"}},
+					ReleaseIds = new List<ReleaseId> {
+						new ReleaseId{ISRC = new ValueThing{Value="second track isrc"}}
+					}
+				},
+			};
+		}
+	}
+
+	public class Release
+	{
+		public List<ReleaseType> ReleaseTypes { get; set; }
+		public List<ReleaseId> ReleaseIds { get; set; }
+	}
+
+	public class ReleaseId
+	{
+		public ValueThing ICPN { get; set; }
+		public ValueThing ISRC { get; set; }
+	}
+
+	public class ValueThing
+	{
+		public string Value { get; set; }
+	}
+
+	public class ReleaseType
+	{
+		public string Value { get; set; }
+	}
+
+	public class X
 	{
 		public List<object> container;
 		public List<object> singleItem;
 		public List<object> emptyItem;
 	}
+	#endregion
 }
