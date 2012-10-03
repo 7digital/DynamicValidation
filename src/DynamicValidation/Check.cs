@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Dynamic;
 using DynamicValidation.Reflection;
 using DynamicValidation.SpecialPredicates;
-using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
 namespace DynamicValidation {
@@ -74,20 +73,35 @@ namespace DynamicValidation {
 
 			// Next check the validation rules against the object tree.
 			// this is where the [single, any ...] rules come in.
-			RunPredicates(result, predicates);
+			RunPredicates(chain, subject, result, predicates);
 
 			return true;
 		}
 
-		void RunPredicates(Result outp, IEnumerable<INamedPredicate> predicates)
+		static void RunPredicates(List<ChainStep> remainingChain, object subject, Result result, IEnumerable<INamedPredicate> predicates)
 		{
 			// TODO: build up a tree-walking strategy here
 			// should be able to step through simple chain-steps
 			// and recurse through enumerable ones.
+
+			// each time we come to a [non-single / non nth] enumeration,
+			// we split the chain and recursively check further.
+
+			// when coming back up the tree, we merge in all the failure reasons.
+
+			// we only actually run our predicates once we hit the end of the chain.
+
+			result.Target = subject;
+			while (remainingChain.Count > 0)
+			{
+				result.Target = result.Target.Get(remainingChain.First().Name);
+				remainingChain = remainingChain.Skip(1).ToList();
+			}
+
 			foreach (var predicate in predicates)
 			{
 				string message;
-				if ( ! predicate.Matches(outp.Target, out message)) outp.FailBecause(message);
+				if ( ! predicate.Matches(result.Target, out message)) result.FailBecause(message);
 			}
 		}
 
