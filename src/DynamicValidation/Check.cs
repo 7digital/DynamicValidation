@@ -73,12 +73,14 @@ namespace DynamicValidation {
 
 			// Next check the validation rules against the object tree.
 			// this is where the [single, any ...] rules come in.
-			RunPredicates(chain, subject, result, predicates);
+			result.Target = subject;
+			string pathSoFar = subject.GetType().Name;
+			RunPredicates(chain, pathSoFar, result, predicates);
 
 			return true;
 		}
 
-		static void RunPredicates(List<ChainStep> remainingChain, object subject, Result result, IEnumerable<INamedPredicate> predicates)
+		static void RunPredicates(List<ChainStep> remainingChain, string path, Result result, IEnumerable<INamedPredicate> predicates)
 		{
 			// TODO: build up a tree-walking strategy here
 			// should be able to step through simple chain-steps
@@ -91,12 +93,13 @@ namespace DynamicValidation {
 
 			// we only actually run our predicates once we hit the end of the chain.
 
-			result.Target = subject;
 			while (remainingChain.Count > 0)
 			{
 				result.Target = result.Target.Get(remainingChain.First().Name);
+				path += "." + remainingChain.First().Name;
 				remainingChain = remainingChain.Skip(1).ToList();
 			}
+			Console.WriteLine("Full path was "+path);
 
 			foreach (var predicate in predicates)
 			{
@@ -106,7 +109,7 @@ namespace DynamicValidation {
 		}
 
 
-		IEnumerable<INamedPredicate> AllConstraintsAsPredicates(IEnumerable<object> indexes)
+		static IEnumerable<INamedPredicate> AllConstraintsAsPredicates(IEnumerable<object> indexes)
 		{
 			var constraintsAsPredicates = new List<INamedPredicate>();
 			foreach (var index in indexes)
