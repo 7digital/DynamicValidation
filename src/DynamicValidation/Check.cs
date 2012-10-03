@@ -15,6 +15,28 @@ namespace DynamicValidation {
 			return new Check(subject);
 		}
 
+		public static dynamic Single(object target)
+		{
+			return target is IEnumerable<object> 
+				? new Check(((IEnumerable<object>) target).Single()) 
+				: new Check(target);
+		}
+
+		public static dynamic Single(IEnumerable<object> target)
+		{
+			return new Check(target.Single());
+		}
+		public static dynamic First(object target)
+		{
+			return target is IEnumerable<object> 
+				? new Check(((IEnumerable<object>) target).First()) 
+				: new Check(target);
+		}
+
+		public static dynamic First(IEnumerable<object> target)
+		{
+			return new Check(target.First());
+		}
 
 		Check (object subject) {
 			this.subject = subject;
@@ -100,11 +122,18 @@ namespace DynamicValidation {
 					return;
 				}
 
+				currentTarget = ShortcutTargetIfSingleItemEnumerable(currentTarget);
+
 				var definitionCount  = currentTarget.CountDefinitions(name);
 
 				if (definitionCount < 1)
 				{
-					result.FailBecause(pathSoFar + "." + name + " is not a possible path");
+					if (currentTarget is IEnumerable<object>)
+					{
+						result.FailBecause(pathSoFar + "." + name + " is inside an enumerable");
+					}
+					else
+						result.FailBecause(pathSoFar + "." + name + " is not a possible path");
 					return;
 				}
 				if (definitionCount > 1)
@@ -118,6 +147,19 @@ namespace DynamicValidation {
 			}
 
 			result.Target = currentTarget;
+		}
+
+		static object ShortcutTargetIfSingleItemEnumerable(object currentTarget)
+		{
+			if ( ! (currentTarget is IEnumerable<object>)) return currentTarget;
+
+			try
+			{
+				return ((IEnumerable<object>) currentTarget).Single();
+			} catch
+			{
+				return currentTarget;
+			}
 		}
 
 		public class Result {

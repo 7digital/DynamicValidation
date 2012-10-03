@@ -21,9 +21,11 @@ namespace DynamicValidation.Tests {
 		}
 
 		[Test]
-		public void cant_use_method_groups_in_index ()
+		public void can_NOT_use_method_groups_in_index ()
 		{
-			//This doesn't work: // Check.That(subject).One[MethodGroup];
+			// This doesn't work:
+			//     Check.That(subject).One[MethodGroup];
+			// it's just a restriction of C#
 			var x = Check.That(subject).One[ItShould.BeLikeThis];
 			Assert.Pass();
 		}
@@ -85,6 +87,7 @@ namespace DynamicValidation.Tests {
 			Console.WriteLine(string.Join(" ", result.Reasons));
 
 			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reasons, Contains.Item("You should relax more"));
 		}
 
 		[Test]
