@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="common_predicate_tests.cs" />
+    <Compile Include="complex_enumeration_tests.cs" />
     <Compile Include="enumerables_in_tree_tests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="simple_object_tree_tests.cs" />

@@ -75,7 +75,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void can_NOT_assert_that_all_children_validate()
 		{
-			// Plan is to be able to specify "all", "single", "any", "first", n-th
+			// Plan is to be able to specify "all", "single", "any", n-th
 			var example = Check.That(subject).SingleThing.ListOfK("all").Value[Is.StringContaining("Hello")];
 
 			// 3rd item of ListOfK...
