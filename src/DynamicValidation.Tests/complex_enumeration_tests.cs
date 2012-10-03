@@ -38,7 +38,7 @@ namespace DynamicValidation.Tests
 			var result = Check.That(subject).container("all").a[Is.True];
 
 			Assert.That(result.Success, Is.False, "check did not fail, but it should have");
-			Assert.That(result.Reasons, Contains.Item("not all X.container.a matched Expected: True\nBut got: False"));
+			Assert.That(result.Reasons, Contains.Item("not all children of X.container validated successfully"));
 		}
 
 		[Test]
@@ -106,8 +106,8 @@ namespace DynamicValidation.Tests
 			var result1 = Check.That(message).Releases("single", IsBundle).ReleaseIds.ICPN.Value[Is.Not.Empty];
 			var result2 = Check.That(message).Releases("all", IsTrack).ReleaseIds.ISRC.Value[Is.Not.Empty];
 
-			Assert.That(result1.Success, Is.True, "Bundle ICPN: "+result1.Reason);
-			Assert.That(result2.Success, Is.True, "Track ISRC: "+result2.Reason);
+			Assert.That(result1.Success, Is.True, "Bundle ICPN: " + result1.Reason);
+			Assert.That(result2.Success, Is.True, "Track ISRC: " + result2.Reason);
 		}
 	}
 

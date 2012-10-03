@@ -22,6 +22,8 @@ namespace DynamicValidation.Reflection
 			if (field == null)
 			{
 				var prop = target.GetType().GetProperty(memberName);
+				if (prop == null) throw new FastFailureException();
+
 				field = prop.GetBackingField();
 			}
 

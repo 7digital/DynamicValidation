@@ -6,7 +6,7 @@ namespace DynamicValidation.Tests
 	[TestFixture]
 	public class common_predicate_tests
 	{
-		readonly object subject = new {container = new List<string>{
+		readonly object subject = new Outer {container = new List<string>{
 			"one", "two", "three"
 		}};
 
@@ -18,7 +18,7 @@ namespace DynamicValidation.Tests
 
 			Assert.That(pass.Success);
 			Assert.That(fail.Success, Is.False);
-			Assert.That(fail.Reasons, Contains.Item("Should have 42 items exactly"));
+			Assert.That(fail.Reasons, Contains.Item("Outer.container Should have 42 items exactly"));
 		}
 		
 		[Test]
@@ -30,7 +30,7 @@ namespace DynamicValidation.Tests
 
 			Assert.That(pass.Success);
 			Assert.That(fail.Success, Is.False);
-			Assert.That(fail.Reasons, Contains.Item("Was not null... unexpected!"));
+			Assert.That(fail.Reasons, Contains.Item("Outer.container Was not null... unexpected!"));
 		}
 		
 		[Test]
@@ -42,7 +42,7 @@ namespace DynamicValidation.Tests
 
 			Assert.That(pass.Success);
 			Assert.That(fail.Success, Is.False);
-			Assert.That(fail.Reasons, Contains.Item("Expected all items to be 'two'"));
+			Assert.That(fail.Reasons, Contains.Item("Outer.container Expected all items to be 'two'"));
 		}
 		
 		
@@ -54,7 +54,7 @@ namespace DynamicValidation.Tests
 
 			Assert.That(pass.Success);
 			Assert.That(fail.Success, Is.False);
-			Assert.That(fail.Reasons, Contains.Item("Should have at least 42 items"));
+			Assert.That(fail.Reasons, Contains.Item("Outer.container Should have at least 42 items"));
 		}
 		
 		[Test]
@@ -65,7 +65,7 @@ namespace DynamicValidation.Tests
 
 			Assert.That(pass.Success);
 			Assert.That(fail.Success, Is.False);
-			Assert.That(fail.Reasons, Contains.Item("Should have less than 3 items"));
+			Assert.That(fail.Reasons, Contains.Item("Outer.container Should have less than 3 items"));
 		}
 
 		[Test]
@@ -75,5 +75,9 @@ namespace DynamicValidation.Tests
 
 			Assert.That(result.Success, Is.True, string.Join(" ", result.Reasons));
 		}
+	}
+
+	class Outer {
+		public List<string> container;
 	}
 }

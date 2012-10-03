@@ -79,17 +79,15 @@ namespace DynamicValidation.Tests {
 
 			Check.Result result = Check.That(subject).Two.X[Is.InstanceOf<A>(), FrankieSaysRelax];
 
-			Console.WriteLine(string.Join(" ", result.Reasons));
-
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("You should relax more"));
+			Assert.That(result.Reasons, Contains.Item("BaseThing.Two.X You should relax more"));
 		}
 
 		[Test]
 		public void assert_two_q_doesnt_exist () {
 			Check.Result result = Check.That(subject).Two.Q.AnotherName.What.The.Fudge[Is.Not.Null];
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("BaseThing.Two.Q is not a possible path"));
+			Assert.That(result.Reasons, Contains.Item("BaseThing.Two.Q is not a valid path"));
 		}
 
 		#region Junk
