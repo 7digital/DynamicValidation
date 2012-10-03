@@ -3,86 +3,60 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
 using DynamicValidation.Reflection;
+using DynamicValidation.SpecialPredicates;
 using NUnit.Framework;
 using NUnit.Framework.Constraints;
 
 namespace DynamicValidation {
-	public class Check : DynamicObject {
-		readonly object subject;
-		readonly List<string> chain;
 
-		/// <summary>
-		/// Start an assertion on the subject
-		/// </summary>
+	/// <summary>
+	/// Experimental version of CHECK.
+	/// </summary>
+	public class Check : DynamicObject {
+
+		readonly object subject;
+		readonly List<ChainStep> chain;
+
 		public static dynamic That (object subject) {
 			return new Check(subject);
-		}
-
-		/// <summary>
-		/// Start an assertion on the only item in an enumerable
-		/// </summary>
-		public static dynamic Single(object target)
-		{
-			return target is IEnumerable<object> 
-				? new Check(((IEnumerable<object>) target).Single()) 
-				: new Check(target);
-		}
-
-		/// <summary>
-		/// Start an assertion on the only item in an enumerable
-		/// </summary>
-		public static dynamic Single(IEnumerable<object> target)
-		{
-			return new Check(target.Single());
-		}
-
-		/// <summary>
-		/// Start an assertion on the first item in an enumerable
-		/// </summary>
-		public static dynamic First(object target)
-		{
-			return target is IEnumerable<object> 
-				? new Check(((IEnumerable<object>) target).First()) 
-				: new Check(target);
-		}
-
-		/// <summary>
-		/// Start an assertion on the first item in an enumerable
-		/// </summary>
-		public static dynamic First(IEnumerable<object> target)
-		{
-			return new Check(target.First());
 		}
 
 		#region Building Chain
 		Check (object subject) {
 			this.subject = subject;
-			chain = new List<string>();
+			chain = new List<ChainStep>();
 		}
 
-		Check (object subject, IEnumerable<string> oldChain, string nextItem) {
+		Check (object subject, IEnumerable<ChainStep> oldChain, ChainStep nextItem) {
 			this.subject = subject;
-			chain = new List<string>(oldChain) { nextItem };
+			chain = new List<ChainStep>(oldChain) { nextItem };
 		}
 
-		dynamic Add (string name) {
+		dynamic Add (ChainStep name) {
 			return new Check(subject, chain, name);
 		}
 
 		public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
 		{
-			/*if (args.Length == 1)
+			// we've been passed an enumeration argument
+			switch (args.Length)
 			{
-				if (args[0] is int) Console.WriteLine("Would look at item #"+(((int)args[0])+1));
-				else Console.WriteLine("Would look at "+args[0]+" item(s)");
-			}*/
-			result = Add(binder.Name);
+				case 1: // either like `list(1)` or `list("any")`
+					if (args[0] is int) result = Add(ChainStep.Complex(binder.Name, "single", (int)args[0], ChainStep.Anything));
+					else result = Add(ChainStep.Complex(binder.Name, args[0].ToString(), 0, ChainStep.Anything));
+					break;
+				case 2: // like `list("all", o => o.something != null)`
+					result = Add(ChainStep.Complex(binder.Name, args[0].ToString(), 0, (Func<object, bool>)args[1]));
+					break;
+				default: // don't understand!
+					throw new ArgumentException("I don't understand the arguments to "+binder.Name);
+			}
 			return true;
 		}
 
 		public override bool TryGetMember (GetMemberBinder binder, out object result) {
 			// No actual access here, just record the request.
-			result = Add(binder.Name);
+			result = Add(ChainStep.SimpleStep(binder.Name));
 			return true;
 		}
 		#endregion
@@ -91,22 +65,25 @@ namespace DynamicValidation {
 			var result = new Result();
 			finalResult = result;
 			
-			if (indexes.Any(i=> (i is IResolveConstraint || i is INamedPredicate) == false))
-				throw new ArgumentException("All assertions must be IResolveContraint or INamedPredicate");
+			var predicates = AllConstraintsAsPredicates(indexes);
 
-
-			AssertPathAndAssignResultTarget(result);
-
+			// First, check that the path is valid given the object tree.
+			// try to ignore enumeration stuff as much as possible.
+			AssertPath(result);
 			if ( ! result.Success) return true;
 
-			RunAssertions(result, indexes.OfType<IResolveConstraint>());
-			RunPredicates(result, indexes.OfType<INamedPredicate>());
+			// Next check the validation rules against the object tree.
+			// this is where the [single, any ...] rules come in.
+			RunPredicates(result, predicates);
 
 			return true;
 		}
 
 		void RunPredicates(Result outp, IEnumerable<INamedPredicate> predicates)
 		{
+			// TODO: build up a tree-walking strategy here
+			// should be able to step through simple chain-steps
+			// and recurse through enumerable ones.
 			foreach (var predicate in predicates)
 			{
 				string message;
@@ -114,74 +91,86 @@ namespace DynamicValidation {
 			}
 		}
 
-		void RunAssertions(Result outp, IEnumerable<IResolveConstraint> constraints)
+
+		IEnumerable<INamedPredicate> AllConstraintsAsPredicates(IEnumerable<object> indexes)
 		{
-			foreach (var constraint in constraints)
+			var constraintsAsPredicates = new List<INamedPredicate>();
+			foreach (var index in indexes)
 			{
-				var check = constraint.Resolve();
-				if ( ! check.Matches(outp.Target))
+				if (index is INamedPredicate)
 				{
-					var sw = new TextMessageWriter();
-					check.WriteMessageTo(sw);
-					outp.FailBecause(sw.ToString());
+					constraintsAsPredicates.Add((INamedPredicate)index);
+				} else if (index is IResolveConstraint)
+				{
+					constraintsAsPredicates.Add(new ConstraintPredicate((IResolveConstraint)index));
+				} else
+				{
+					throw new ArgumentException("All assertions must be IResolveContraint or INamedPredicate");
 				}
 			}
+			return constraintsAsPredicates;
 		}
-
-		void AssertPathAndAssignResultTarget(Result result)
+		void AssertPath(Result result)
 		{
 			// here we will walk through the 'chain' checking that members are defined
 			// (i.e. the member exists and the user has spelled it correctly)
 			// and are not null. If the LAST item in the chain is null, that's OK.
+			// we fall over here if any enumerables are empty, because it screws with
+			// type reflection.
 			object currentTarget = subject;
 			string pathSoFar = subject.GetType().Name;
 
-			foreach (var name in chain)
-			{
-				if (currentTarget == null)
-				{
-					result.FailBecause(pathSoFar + " is null or can't be accessed");
-					return;
-				}
-
-				currentTarget = ShortcutTargetIfSingleItemEnumerable(currentTarget);
-
-				var definitionCount  = currentTarget.CountDefinitions(name);
-
-				if (definitionCount < 1)
-				{
-					if (currentTarget is IEnumerable<object>)
-					{
-						result.FailBecause(pathSoFar + "." + name + " is inside an enumerable");
-					}
-					else
-						result.FailBecause(pathSoFar + "." + name + " is not a possible path");
-					return;
-				}
-				if (definitionCount > 1)
-				{
-					result.FailBecause(pathSoFar + "." + name + " is ambiguous");
-					return;
-				}
-
-				pathSoFar += "."+name;
-				currentTarget = currentTarget.Get(name);
-			}
-
-			result.Target = currentTarget;
-		}
-
-		static object ShortcutTargetIfSingleItemEnumerable(object currentTarget)
-		{
-			if ( ! (currentTarget is IEnumerable<object>)) return currentTarget;
-
 			try
 			{
-				return ((IEnumerable<object>) currentTarget).Single();
-			} catch
+				foreach (var step in chain)
+				{
+					currentTarget = AssertPathStep(result, step, currentTarget, ref pathSoFar);
+				}
+			} catch (FastFailureException) { }
+		}
+
+		static object AssertPathStep(Result result, ChainStep step, object currentTarget, ref string pathSoFar)
+		{
+			if (currentTarget == null)
 			{
-				return currentTarget;
+				result.FailBecause(pathSoFar + " is null or can't be accessed");
+				throw new FastFailureException();
 			}
+
+			currentTarget = SkipOverEnumerable(currentTarget);
+			if (currentTarget == null)
+			{
+				result.FailBecause(pathSoFar + " has no items");
+				throw new FastFailureException();
+			}
+
+			var definitionCount = currentTarget.CountDefinitions(step.Name);
+
+			if (definitionCount < 1)
+			{
+				if (currentTarget is IEnumerable<object>)
+				{
+					result.FailBecause(pathSoFar + " does not have a single child");
+				}
+				else
+					result.FailBecause(pathSoFar + "." + step.Name + " is not a possible path");
+				throw new FastFailureException();
+			}
+			if (definitionCount > 1)
+			{
+				result.FailBecause(pathSoFar + "." + step.Name + " is ambiguous");
+				throw new FastFailureException();
+			}
+
+			pathSoFar += "." + step.Name;
+			currentTarget = currentTarget.Get(step.Name);
+			return currentTarget;
+		}
+
+		static object SkipOverEnumerable(object currentTarget)
+		{
+			if ( ! (currentTarget is IEnumerable<object>)) return currentTarget;
+			return ((IEnumerable<object>) currentTarget).FirstOrDefault();
 		}
 
 		public class Result {
@@ -202,6 +191,12 @@ namespace DynamicValidation {
 
 			/// <summary> Description of failures if not success. Undefined otherwise. </summary>
 			public IEnumerable<string> Reasons { get; set; }
+			
+			/// <summary> Single string reason for failure </summary>
+			public string Reason
+			{
+				get { return string.Join(", ", Reasons);}
+			}
 
 			/// <summary> Final object tested. If null is encountered before tested object, this will be null </summary>
 			public object Target { get; set; }

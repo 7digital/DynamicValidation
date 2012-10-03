@@ -42,7 +42,6 @@
     <Compile Include="Internals\FastFailureException.cs" />
     <Compile Include="Internals\ChainStep.cs" />
     <Compile Include="Check.cs" />
-    <Compile Include="Check2.cs" />
     <Compile Include="Internals\ListAssertion.cs" />
     <Compile Include="SpecialPredicates\ConstraintPredicate.cs" />
     <Compile Include="SpecialPredicates\EnumerableConstraintPredicate.cs" />

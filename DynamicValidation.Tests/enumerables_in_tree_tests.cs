@@ -37,7 +37,7 @@ namespace DynamicValidation.Tests
 			Assert.That(r1.Success);
 		}
 
-
+		/*
 		[Test]
 		public void can_assert_on_enumerables_and_their_results()
 		{
@@ -70,19 +70,22 @@ namespace DynamicValidation.Tests
 		{
 			var result = Check.Single(subject).JustOneThingInAList.Value[Is.EqualTo("Woop!")];
 			Assert.That(result.Success, string.Join(" ", result.Reasons));
+		}*/
+
+		[Test, Ignore()]
+		public void can_assert_that_nth_child_validates()
+		{
+			var result = Check.That(subject).SingleThing.ListOfK(2).Value[Is.EqualTo("Hello, Alice")];
+
+			Assert.That(result.Success, Is.True, result.Reason);
 		}
 
 		[Test]
-		public void can_NOT_assert_that_all_children_validate()
+		public void can_assert_that_all_children_validate()
 		{
-			// Plan is to be able to specify "all", "single", "any", n-th
-			var example = Check.That(subject).SingleThing.ListOfK("all").Value[Is.StringContaining("Hello")];
+			var result = Check.That(subject).SingleThing.ListOfK("all").Value[Is.StringContaining("Hello")];
 
-			// 3rd item of ListOfK...
-			var result = Check.That(subject).SingleThing.ListOfK(2).Value[Is.EqualTo("Hello, Alice")];
-
-			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("ComplexThing.SingleThing.ListOfK.Value is inside an enumerable"));
+			Assert.That(result.Success, Is.True, result.Reason);
 		}
 
 	}
