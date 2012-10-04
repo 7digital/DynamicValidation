@@ -1,8 +1,2 @@
 using System;
-
-namespace DynamicValidation
-{
-	class FastFailureException : Exception
-	{
-	}
-}
+namespace DynamicValidation.Internals { class FastFailureException : Exception { } }

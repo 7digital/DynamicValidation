@@ -2,15 +2,12 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
+using DynamicValidation.Internals;
 using DynamicValidation.Reflection;
 using DynamicValidation.SpecialPredicates;
 using NUnit.Framework.Constraints;
 
 namespace DynamicValidation {
-
-	/// <summary>
-	/// Experimental version of CHECK.
-	/// </summary>
 	public class Check : DynamicObject {
 		public static dynamic That (object subject) {
 			return new Check(subject);
@@ -65,28 +62,17 @@ namespace DynamicValidation {
 			var result = new Result();
 			finalResult = result;
 			
-			var predicates = AllConstraintsAsPredicates(indexes);
+			var predicates = AllConstraintsAsPredicates(indexes).ToList();
 
-			// Next check the validation rules against the object tree.
-			// this is where the [single, any ...] rules come in.
 			result.Target = subject;
 			string pathSoFar = subject.GetType().Name;
-			RunPredicates(chain, pathSoFar, result, predicates);
+			WalkObjectTree(chain, pathSoFar, result, predicates);
 
 			return true;
 		}
 
-		static void RunPredicates(List<ChainStep> chain, string path, Result result, IEnumerable<INamedPredicate> predicates)
+		static void WalkObjectTree(List<ChainStep> chain, string path, Result result, IList<INamedPredicate> predicates)
 		{
-			// Step through simple chain-steps
-			// and recurse through enumerable ones.
-
-			// each time we come to a [non-single / non nth] enumeration,
-			// we split the chain and recursively check further.
-
-			// when coming back up the tree, we merge in all the failure reasons.
-
-			// we only actually run our predicates once we hit the end of the chain.
 			var remainingChain = chain;
 			while (remainingChain.Count > 1)
 			{
@@ -132,35 +118,12 @@ namespace DynamicValidation {
 							break;
 
 						case ListAssertion.All:
-							var i = 0;
-							foreach (var route in container) {
-								var cleanResult = new Result {Target = route};
-								var localPath = pathHere + "[" + i + "]";
-								RunPredicates(remainingChain, localPath, cleanResult, predicates);
-								result.Merge(cleanResult);
-								i++;
-							}
-							if ( ! result.Success) 
-								result.FailBecause("not all children of " + pathHere + " validated successfully");
-							return; // should have walked entire rest of tree.
+							CheckAllSubpaths(result, predicates, pathHere, remainingChain, container);
+							return;
 
 						case ListAssertion.Any:
-							var j = 0;
-							var successCount = 0;
-							var subResult = new Result();
-							foreach (var route in container) {
-								var cleanResult = new Result {Target = route};
-								var localPath = pathHere + "[" + j + "]";
-								RunPredicates(remainingChain, localPath, cleanResult, predicates);
-								subResult.Merge(cleanResult);
-								if (cleanResult.Success) successCount++;
-								j++;
-							}
-							if (successCount < 1) {
-								result.FailBecause("no children of " + pathHere + " validated successfully");
-								result.Merge(subResult);
-							}
-							return; // should have walked entire rest of tree.
+							CheckAnySubpaths(result, predicates, remainingChain, pathHere, container);
+							return;
 
 						default: throw new Exception("Unexpected list assertion type");
 					}
@@ -170,12 +133,21 @@ namespace DynamicValidation {
 				path = pathHere;
 			}
 
-			if (remainingChain.Count == 1) {
+			ApplyPredicatesToEndOfChain(path, result, predicates, remainingChain);
+		}
+
+		static void ApplyPredicatesToEndOfChain(string path, Result result, IEnumerable<INamedPredicate> predicates, List<ChainStep> remainingChain)
+		{
+			if (remainingChain.Count == 1)
+			{
 				var step = remainingChain[0];
-				try {
+				try
+				{
 					result.Target = result.Target.Get(step.Name);
 					path += "." + step.Name;
-				} catch (FastFailureException) {
+				}
+				catch (FastFailureException)
+				{
 					result.FailBecause(path + "." + step.Name + " is not a valid path");
 					return;
 				}
@@ -186,6 +158,42 @@ namespace DynamicValidation {
 				string message;
 				if (!predicate.Matches(result.Target, out message)) result.FailBecause(path + " " + message);
 			}
+		}
+
+		static void CheckAnySubpaths(Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain, string pathHere, IEnumerable<object> container)
+		{
+			var j = 0;
+			var successCount = 0;
+			var subResult = new Result();
+			foreach (var route in container)
+			{
+				var cleanResult = new Result {Target = route};
+				var localPath = pathHere + "[" + j + "]";
+				WalkObjectTree(remainingChain, localPath, cleanResult, predicates);
+				subResult.Merge(cleanResult);
+				if (cleanResult.Success) successCount++;
+				j++;
+			}
+			if (successCount < 1)
+			{
+				result.FailBecause("no children of " + pathHere + " validated successfully");
+				result.Merge(subResult);
+			}
+		}
+
+		static void CheckAllSubpaths(Result result, IList<INamedPredicate> predicates, string pathHere, List<ChainStep> remainingChain, IEnumerable<object> container)
+		{
+			var i = 0;
+			foreach (var route in container)
+			{
+				var cleanResult = new Result {Target = route};
+				var localPath = pathHere + "[" + i + "]";
+				WalkObjectTree(remainingChain, localPath, cleanResult, predicates);
+				result.Merge(cleanResult);
+				i++;
+			}
+			if (! result.Success)
+				result.FailBecause("not all children of " + pathHere + " validated successfully");
 		}
 
 		static IEnumerable<INamedPredicate> AllConstraintsAsPredicates(IEnumerable<object> indexes)

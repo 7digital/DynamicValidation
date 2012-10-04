@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace DynamicValidation.Tests
 {
-	[TestFixture]//, Explicit("Failing tests for upcoming features")]
+	[TestFixture]
 	public class complex_enumeration_tests
 	{
 		readonly object subject = new X

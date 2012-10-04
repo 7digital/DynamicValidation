@@ -1,4 +1,4 @@
-namespace DynamicValidation
+namespace DynamicValidation.Internals
 {
 	enum ListAssertion
 	{

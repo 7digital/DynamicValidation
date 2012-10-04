@@ -1,4 +1,5 @@
 using System.Linq;
+using DynamicValidation.Internals;
 
 namespace DynamicValidation.Reflection
 {
