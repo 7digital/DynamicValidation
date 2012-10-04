@@ -39,7 +39,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void can_assert_that_nth_child_validates()
 		{
-			var result = Check.That(subject).SingleThing.ListOfK(2).Value[Is.EqualTo("Hello, Alice")];
+			var result = Check.That(subject).SingleThing.ListOfK(2).Value[Should.Equal("Hello, Alice")];
 
 			Assert.That(result.Success, Is.True, result.Reason);
 		}
@@ -47,7 +47,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void can_assert_that_all_children_validate()
 		{
-			var result = Check.That(subject).SingleThing.ListOfK("all").Value[Is.StringContaining("Hello")];
+			var result = Check.That(subject).SingleThing.ListOfK("all").Value[Should.Contain("Hello")];
 
 			Assert.That(result.Success, Is.True, result.Reason);
 		}

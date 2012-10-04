@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DynamicValidation.Internals;
 using DynamicValidation.SpecialPredicates;
-using NUnit.Framework.Constraints;
 
 namespace DynamicValidation
 {
@@ -15,7 +15,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 						o => ((IEnumerable<object>)o).Count() == n,
-						"Should have " + n + " items exactly"
+						o => "should have " + n + " items exactly"
 						);
 		}
 
@@ -23,7 +23,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 						o => ((IEnumerable<object>)o).Count() >= n,
-						"Should have at least " + n + " items"
+						o => "should have at least " + n + " items"
 						);
 		}
 
@@ -31,26 +31,115 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 						o => ((IEnumerable<object>)o).Count() < n,
-						"Should have less than " + n + " items"
+						o => "should have less than " + n + " items"
 						);
 		}
 
 		public static INamedPredicate Be(Func<object, bool> pred, string message)
 		{
-			return new NamedPredicate(pred, message);
+			return new NamedPredicate(pred, o => message);
+		}
+		public static INamedPredicate Be<T>()
+		{
+			return new NamedPredicate(
+				o => o is T,
+				o => "expected " + typeof(T).Name + " but got " +
+					((o == null) ? "null" : (o.GetType().Name)));
 		}
 
-		public static INamedPredicate AllMatch(IResolveConstraint constraint)
+		public static INamedPredicate AllMatch(INamedPredicate constraint)
 		{
-			return new EnumerableConstraintPredicate(constraint);
+			return new EnumerablePredicate(constraint);
 		}
 
 		public static INamedPredicate AllBe(Func<object, bool> predicate, string message)
 		{
 			return new NamedPredicate(
 						o => ((IEnumerable<object>)o).All(predicate),
-						message
+						o => message
 						);
+		}
+
+		public static INamedPredicate NotBeNull
+		{
+			get
+			{
+				return new NamedPredicate(
+					  o => o != null,
+					  o => "was null"
+					  );
+			}
+		}
+
+		public static object BeTrue
+		{
+			get
+			{
+				return new NamedPredicate(
+					  o => (o as bool?) == true,
+					  o => "expected true but got "+o
+					  );
+			}
+		}
+
+		public static object BeFalse
+		{
+			get
+			{
+				return new NamedPredicate(
+					  o => (o as bool?) == false,
+					  o => "expected true but got "+o
+					  );
+			}
+		}
+
+		public static object NotBeEmpty
+		{
+			get
+			{
+				return new NamedPredicate(
+					  o => ! string.IsNullOrEmpty(o as string),
+					  o => (o is string) ? "was empty" : "was not a string"
+					  );
+			}
+		}
+
+		public static object BeEmpty
+		{
+			get
+			{
+				return new NamedPredicate(
+					  o => string.IsNullOrEmpty(o as string),
+					  o => (o is string) ? ("was " + o) : "was not a string"
+					  );
+			}
+		}
+		
+		public static INamedPredicate BeNull
+		{
+			get
+			{
+				return new NamedPredicate(
+					  o => o == null,
+					  o => "was not null"
+					  );
+			}
+		}
+
+		public static INamedPredicate Equal(object aValue)
+		{
+			return new NamedPredicate(
+				o => o.Equals(aValue),
+				o => " was not equal to "+aValue
+				);
+		}
+
+		public static INamedPredicate Contain(string substring)
+		{
+			return new NamedPredicate(
+					  o => ((o as string) != null) && ((string)o).Contains(substring),
+					  o => (o is string) ? "did not contain \""+substring+"\"" : "was not a string"
+					  );
 		}
 	}
 }

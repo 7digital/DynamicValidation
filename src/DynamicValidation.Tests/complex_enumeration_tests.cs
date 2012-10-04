@@ -27,7 +27,7 @@ namespace DynamicValidation.Tests
 		[TestCase(2, true)]
 		public void can_check_that_nth_item_validates(int n, bool a_value)
 		{
-			var result = Check.That(subject).container(n).a[Is.EqualTo(a_value)];
+			var result = Check.That(subject).container(n).a[Should.Equal(a_value)];
 
 			Assert.That(result.Success, Is.True, string.Join(" ", result.Reasons));
 		}
@@ -35,7 +35,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void all_child_validation_fails_correctly()
 		{
-			var result = Check.That(subject).container("all").a[Is.True];
+			var result = Check.That(subject).container("all").a[Should.BeTrue];
 
 			Assert.That(result.Success, Is.False, "check did not fail, but it should have");
 			Assert.That(result.Reasons, Contains.Item("not all children of X.container validated successfully"));
@@ -44,7 +44,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void all_child_validation_passes_correctly()
 		{
-			var result = Check.That(subject).container("all").b[Is.True];
+			var result = Check.That(subject).container("all").b[Should.BeTrue];
 
 			Assert.That(result.Success, Is.True, result.Reason);
 		}
@@ -52,7 +52,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void any_child_validation_passes_correctly()
 		{
-			var result = Check.That(subject).container("any").a[Is.True];
+			var result = Check.That(subject).container("any").a[Should.BeTrue];
 
 			Assert.That(result.Success, Is.True);
 		}
@@ -60,7 +60,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void any_child_validation_fails_correctly()
 		{
-			var result = Check.That(subject).container("any").b[Is.False];
+			var result = Check.That(subject).container("any").b[Should.BeFalse];
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("no children of X.container validated successfully"));
@@ -69,7 +69,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void single_child_validation_fails_on_multiple_items()
 		{
-			var result = Check.That(subject).container("single").a[Is.False];
+			var result = Check.That(subject).container("single").a[Should.BeFalse];
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("X.container has length of 3, expected 1"));
@@ -78,7 +78,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void single_child_validation_fails_on_no_items()
 		{
-			var result = Check.That(subject).emptyItem("single").a[Is.False];
+			var result = Check.That(subject).emptyItem("single").a[Should.BeFalse];
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("X.emptyItem has no items"));
@@ -87,7 +87,7 @@ namespace DynamicValidation.Tests
 		[Test]
 		public void single_child_validation_passes_with_one_item()
 		{
-			var result = Check.That(subject).singleItem("single").a[Is.True];
+			var result = Check.That(subject).singleItem("single").a[Should.BeTrue];
 
 			Assert.That(result.Success, Is.True, result.Reason);
 		}
@@ -103,8 +103,8 @@ namespace DynamicValidation.Tests
 			// This checks that we have exactly 1 bundle release that has a non-empty ICPN
 			// and that all track releases have non-empty ISRCs
 			// (note that 'ReleaseIds' has an implicit "single" specification)
-			var result1 = Check.That(message).Releases("single", IsBundle).ReleaseIds.ICPN.Value[Is.Not.Empty];
-			var result2 = Check.That(message).Releases("all", IsTrack).ReleaseIds.ISRC.Value[Is.Not.Empty];
+			var result1 = Check.That(message).Releases("single", IsBundle).ReleaseIds.ICPN.Value[Should.NotBeEmpty];
+			var result2 = Check.That(message).Releases("all", IsTrack).ReleaseIds.ISRC.Value[Should.NotBeEmpty];
 
 			Assert.That(result1.Success, Is.True, "Bundle ICPN: " + result1.Reason);
 			Assert.That(result2.Success, Is.True, "Track ISRC: " + result2.Reason);

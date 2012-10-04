@@ -34,34 +34,32 @@ namespace DynamicValidation.Tests {
 
 		[Test]
 		public void can_get_given_predicate_messages () {
-			var result = Check.That(subject).One[Is.Null];
+			var result = Check.That(subject).One[Should.BeNull];
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item(@"BaseThing.One   Expected: null
-  But was:  <DynamicValidation.Tests.A>
-"));
+			Assert.That(result.Reasons, Contains.Item("BaseThing.One was not null"));
 		}
 
 		[Test]
 		public void assert_two_y_is_null () {
-			Check.Result result = Check.That(subject).Two.Y[Is.Null];
+			Check.Result result = Check.That(subject).Two.Y[Should.BeNull];
 			Assert.That(result.Success, Is.True);
 		}
 
 		[Test]
 		public void assert_two_x_is_type_of_a () {
-			Check.Result result = Check.That(subject).Two.X[Is.InstanceOf<A>()];
+			Check.Result result = Check.That(subject).Two.X[Should.Be<A>()];
 			Assert.That(result.Success, Is.True);
 		}
 
 		[Test]
 		public void can_use_more_than_one_assertion () {
-			Check.Result result = Check.That(subject).Two.X[Is.InstanceOf<A>(), Is.EqualTo(subject.Two.X)];
+			Check.Result result = Check.That(subject).Two.X[Should.Be<A>(), Should.Equal(subject.Two.X)];
 			Assert.That(result.Success, Is.True);
 		}
 
 		[Test]
 		public void fails_if_any_assertion_fails () {
-			Check.Result result = Check.That(subject).Two.X[Is.InstanceOf<A>(), Is.EqualTo(subject.Two.X), Is.Null];
+			Check.Result result = Check.That(subject).Two.X[Should.Be<A>(), Should.Equal(subject.Two.X), Should.BeNull];
 
 			Console.WriteLine(string.Join(" ",result.Reasons));
 
@@ -72,7 +70,7 @@ namespace DynamicValidation.Tests {
 		public void can_mix_predicates_and_assertions () {
 			var SaysHelloWorld = new NamedPredicate(o => (o as A).Value == "Hello, world", "Should greet the world");
 
-			Check.Result result = Check.That(subject).Two.X[Is.InstanceOf<A>(), SaysHelloWorld];
+			Check.Result result = Check.That(subject).Two.X[Should.Be<A>(), SaysHelloWorld];
 
 			Assert.That(result.Success, Is.True);
 		}
@@ -81,7 +79,7 @@ namespace DynamicValidation.Tests {
 		public void can_mix_predicates_and_assertions_with_failure () {
 			var FrankieSaysRelax = new NamedPredicate(o=> (o as A).Value == "Relax", "You should relax more");
 
-			Check.Result result = Check.That(subject).Two.X[Is.InstanceOf<A>(), FrankieSaysRelax];
+			Check.Result result = Check.That(subject).Two.X[Should.Be<A>(), FrankieSaysRelax];
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("BaseThing.Two.X You should relax more"));
@@ -89,7 +87,7 @@ namespace DynamicValidation.Tests {
 
 		[Test]
 		public void assert_two_q_doesnt_exist () {
-			Check.Result result = Check.That(subject).Two.Q.AnotherName.What.The.Fudge[Is.Not.Null];
+			Check.Result result = Check.That(subject).Two.Q.AnotherName.What.The.Fudge[Should.NotBeNull];
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("BaseThing.Two.Q is not a valid path"));
 		}

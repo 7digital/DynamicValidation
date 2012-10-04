@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Dynamic;
 using DynamicValidation.Internals;
 using DynamicValidation.Reflection;
-using DynamicValidation.SpecialPredicates;
-using NUnit.Framework.Constraints;
 
 namespace DynamicValidation {
 	public class Check : DynamicObject {
@@ -204,12 +202,10 @@ namespace DynamicValidation {
 				if (index is INamedPredicate)
 				{
 					constraintsAsPredicates.Add((INamedPredicate)index);
-				} else if (index is IResolveConstraint)
+				}
+				else
 				{
-					constraintsAsPredicates.Add(new ConstraintPredicate((IResolveConstraint)index));
-				} else
-				{
-					throw new ArgumentException("All assertions must be IResolveContraint or INamedPredicate");
+					throw new ArgumentException("All assertions must be INamedPredicate");
 				}
 			}
 			return constraintsAsPredicates;

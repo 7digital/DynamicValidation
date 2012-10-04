@@ -33,20 +33,15 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="nunit.framework, Version=2.6.0.12051, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\packages\NUnit.2.6.1\lib\nunit.framework.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Internals\EnumerablePredicate.cs" />
     <Compile Include="Internals\FastFailureException.cs" />
     <Compile Include="Internals\ChainStep.cs" />
     <Compile Include="Check.cs" />
     <Compile Include="Internals\ListAssertion.cs" />
-    <Compile Include="SpecialPredicates\ConstraintPredicate.cs" />
-    <Compile Include="SpecialPredicates\EnumerableConstraintPredicate.cs" />
     <Compile Include="Reflection\BackingFieldResolver.cs" />
     <Compile Include="Reflection\ByteBuffer.cs" />
     <Compile Include="Reflection\Disassembler.cs" />
