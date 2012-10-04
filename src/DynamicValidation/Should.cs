@@ -176,6 +176,14 @@ namespace DynamicValidation
 					  o => "got \""+o+"\" which is not an acceptable value"
 					  );
 		}
+
+		public static INamedPredicate HaveMember(string memberName)
+		{
+			return new NamedPredicate(
+					  o => (o != null) && (o.GetType().GetMembers().Any(m => m.Name == memberName)),
+					  o => (o == null) ? "was null" : "did not contain member \"" + memberName + "\""
+					  );
+		}
 	}
 
 	public static class ShouldExtensions

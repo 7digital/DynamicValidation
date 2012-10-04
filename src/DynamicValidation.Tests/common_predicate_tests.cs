@@ -6,10 +6,13 @@ namespace DynamicValidation.Tests
 	[TestFixture]
 	public class common_predicate_tests
 	{
-		readonly object subject = new Outer {container = new List<string>{
-			"one", "two", "three"
-		},
-		singleValue = "exit"
+		readonly object subject = new Outer
+		{
+			container = new List<string>{
+				"one", "two", "three"
+			},
+			singleValue = "exit",
+			complex = new { childThatExists = "yes!" }
 		};
 
 		[Test]
@@ -27,6 +30,16 @@ namespace DynamicValidation.Tests
 
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reasons, Contains.Item("Outer.singleValue was not equal to wrong, was not equal to wronger"));
+		}
+
+		[Test]
+		public void can_check_for_members()
+		{
+			var pass = Check.That(subject).complex[Should.HaveMember("childThatExists")];
+			var fail = Check.That(subject).complex[Should.HaveMember("nonExistentChild")];
+
+			Assert.That(pass.Success, Is.True, pass.Reason);
+			Assert.That(fail.Success, Is.False);
 		}
 
 		[Test]
@@ -99,5 +112,6 @@ namespace DynamicValidation.Tests
 	class Outer {
 		public List<string> container;
 		public string singleValue;
+		public object complex;
 	}
 }
