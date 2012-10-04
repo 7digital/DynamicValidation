@@ -20,6 +20,15 @@ namespace DynamicValidation {
 			}
 			return result;
 		}
+		public static Result With(Check subject, params Func<dynamic, Result>[] cases)
+		{
+			var result = new Result();
+			foreach (var check in cases)
+			{
+				result.Merge(check(subject));
+			}
+			return result;
+		}
 
 		#region Building Chain
 
