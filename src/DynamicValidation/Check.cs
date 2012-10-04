@@ -11,6 +11,16 @@ namespace DynamicValidation {
 			return new Check(subject);
 		}
 
+		public static Result With(object subject, params Func<dynamic, Result>[] cases)
+		{
+			var result = new Result();
+			foreach (var check in cases)
+			{
+				result.Merge(check(That(subject)));
+			}
+			return result;
+		}
+
 		#region Building Chain
 
 		readonly object subject;
@@ -241,7 +251,7 @@ namespace DynamicValidation {
 
 			public void Merge(Result otherResult) {
 				Success &= otherResult.Success;
-				Reasons = Reasons.Union(otherResult.Reasons).ToList();
+				Reasons = Reasons.Union(otherResult.Reasons).Distinct().ToList();
 			}
 		}
 	}

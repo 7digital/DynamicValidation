@@ -77,7 +77,7 @@ namespace DynamicValidation
 			{
 				return new NamedPredicate(
 					  o => (o as bool?) == true,
-					  o => "expected true but got "+o
+					  o => "expected True but got "+o
 					  );
 			}
 		}
@@ -88,7 +88,7 @@ namespace DynamicValidation
 			{
 				return new NamedPredicate(
 					  o => (o as bool?) == false,
-					  o => "expected true but got "+o
+					  o => "expected False but got "+o
 					  );
 			}
 		}
