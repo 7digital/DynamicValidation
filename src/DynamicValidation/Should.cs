@@ -4,12 +4,13 @@ using System.Linq;
 using DynamicValidation.Internals;
 using DynamicValidation.SpecialPredicates;
 
+// ReSharper disable PartialTypeWithSinglePart
 namespace DynamicValidation
 {
 	/// <summary>
 	/// Some common assertions for use in dynamic validation
 	/// </summary>
-	public class Should
+	public partial class Should
 	{
 		public static INamedPredicate Have(int n)
 		{
@@ -82,6 +83,18 @@ namespace DynamicValidation
 			}
 		}
 
+		/// <summary> Allows anything but bool == true </summary>
+		public static object NotBeTrue
+		{
+			get
+			{
+				return new NamedPredicate(
+					  o => (o as bool?) != true,
+					  o => "got True where not allowed"
+					  );
+			}
+		}
+
 		public static object BeFalse
 		{
 			get
@@ -89,6 +102,19 @@ namespace DynamicValidation
 				return new NamedPredicate(
 					  o => (o as bool?) == false,
 					  o => "expected False but got "+o
+					  );
+			}
+		}
+
+		
+		/// <summary> Allows anything but bool == false </summary>
+		public static object NotBeFalse
+		{
+			get
+			{
+				return new NamedPredicate(
+					  o => (o as bool?) != false,
+					  o => "got True where not allowed"
 					  );
 			}
 		}
