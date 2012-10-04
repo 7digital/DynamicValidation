@@ -33,11 +33,11 @@ namespace DynamicValidation.Internals
 		{
 			switch (s.ToLowerInvariant())
 			{
-				case "any": return ListAssertion.Any;
-				case "all": return ListAssertion.All;
-				case "single": return ListAssertion.Single;
-				case "index": return ListAssertion.Index;
-				default: return ListAssertion.Single;
+				case ListChecks.Any: return ListAssertion.Any;
+				case ListChecks.All: return ListAssertion.All;
+				case ListChecks.Single: return ListAssertion.Single;
+				case ListChecks.Index: return ListAssertion.Index;
+				default: return ListAssertion.Simple;
 			}
 		}
 

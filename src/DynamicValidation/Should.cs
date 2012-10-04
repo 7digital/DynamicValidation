@@ -130,7 +130,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 				o => o.Equals(aValue),
-				o => " was not equal to "+aValue
+				o => "was not equal to "+aValue
 				);
 		}
 
@@ -139,6 +139,15 @@ namespace DynamicValidation
 			return new NamedPredicate(
 					  o => ((o as string) != null) && ((string)o).Contains(substring),
 					  o => (o is string) ? "did not contain \""+substring+"\"" : "was not a string"
+					  );
+		}
+
+		public static INamedPredicate EqualOneOf(IEnumerable<object> acceptableValues)
+		{
+			if (acceptableValues == null) throw new ArgumentException("null values passed to Should.EqualOneOf");
+			return new NamedPredicate(
+					  acceptableValues.Contains,
+					  o => "got \""+o+"\" which is not an acceptable value"
 					  );
 		}
 	}

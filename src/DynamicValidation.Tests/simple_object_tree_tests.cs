@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using DynamicValidation.SpecialPredicates;
 using NUnit.Framework;
 // ReSharper disable PossibleNullReferenceException
@@ -30,6 +31,24 @@ namespace DynamicValidation.Tests {
 			// can work around it with "Should.Be"
 			var x = Check.That(subject).One[Should.Be(MethodGroup, "ok")];
 			Assert.Pass();
+		}
+
+		[Test]
+		public void can_check_against_a_list_of_acceptable_values()
+		{
+			var ok = new List<string>{"Hello, John", "Hello, world", "Hello, universe"};
+			var result = Check.That(subject).Two.X.Value[Should.EqualOneOf(ok)];
+
+			Assert.That(result.Success, Is.True, result.Reason);
+		}
+		[Test]
+		public void can_check_against_a_list_of_acceptable_values_failure_case()
+		{
+			var ok = new List<string>{"Hello, John", "Hello, Simon", "Hello, Jeff"};
+			var result = Check.That(subject).Two.X.Value[Should.EqualOneOf(ok)];
+
+			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reasons, Contains.Item("BaseThing.Two.X.Value got \"Hello, world\" which is not an acceptable value"));
 		}
 
 		[Test]
