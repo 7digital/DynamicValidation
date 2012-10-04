@@ -18,7 +18,10 @@ namespace DynamicValidation.Tests
 			singleItem = new List<object>{
 				new { a = true }
 			},
-			emptyItem = new List<object>()
+			emptyItem = new List<object>(),
+			listOfStrings = new List<string> {
+				"a_", "b_", "c_", "d_", "e_", "f_"
+			}
 		};
 
 		[Test]
@@ -38,7 +41,7 @@ namespace DynamicValidation.Tests
 			var result = Check.That(subject).container("all").a[Should.BeTrue];
 
 			Assert.That(result.Success, Is.False, "check did not fail, but it should have");
-			Assert.That(result.Reasons, Contains.Item("not all children of X.container validated successfully"));
+			Assert.That(result.Reasons, Contains.Item("X.container[1].a expected True but got False"));
 		}
 
 		[Test]
@@ -63,7 +66,7 @@ namespace DynamicValidation.Tests
 			var result = Check.That(subject).container("any").b[Should.BeFalse];
 
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("no children of X.container validated successfully"));
+			Assert.That(result.Reasons, Contains.Item("X.container[any].b expected False but got True"));
 		}
 
 		[Test]
@@ -108,6 +111,29 @@ namespace DynamicValidation.Tests
 
 			Assert.That(result1.Success, Is.True, "Bundle ICPN: " + result1.Reason);
 			Assert.That(result2.Success, Is.True, "Track ISRC: " + result2.Reason);
+		}
+
+		[Test]
+		public void can_validate_terminal_enumerable()
+		{
+			var result = Check.That(subject).listOfStrings[Should.Have(6)];
+
+			Assert.That(result.Success, Is.True, result.Reason);
+		}
+		
+		[Test]
+		public void can_validate_contents_of_terminal_enumerable()
+		{
+			var result = Check.That(subject).listOfStrings("all")[Should.Contain("_")];
+
+			Assert.That(result.Success, Is.True, result.Reason);
+		}
+		[Test]
+		public void can_validate_contents_of_terminal_enumerable_index()
+		{
+			var result = Check.That(subject).listOfStrings(1)[Should.Contain("_")];
+
+			Assert.That(result.Success, Is.True, result.Reason);
 		}
 	}
 
@@ -168,6 +194,7 @@ namespace DynamicValidation.Tests
 		public List<object> container;
 		public List<object> singleItem;
 		public List<object> emptyItem;
+		public List<string> listOfStrings;
 	}
 	#endregion
 }

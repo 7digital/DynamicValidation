@@ -13,7 +13,7 @@ namespace DynamicValidation.Internals
 		{
 			return new ChainStep{
 				Name = name,
-				ListAssertionType = ListAssertion.Single,
+				ListAssertionType = ListAssertion.Simple,
 				FilterPredicate = Anything,
 				SingleIndex = 0
 			};

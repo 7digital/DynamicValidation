@@ -105,24 +105,12 @@ namespace DynamicValidation {
 					var container = ((IEnumerable<object>)next).Where(step.FilterPredicate).ToArray();
 					switch (step.ListAssertionType) {
 						case ListAssertion.Single:
-							if (container.Length > 1) {
-								result.FailBecause(pathHere + " has length of " + container.Length + ", expected 1");
-								return;
-							}
-							if (container.Length < 1) {
-								result.FailBecause(pathHere + " has no items");
-								return;
-							}
-							next = container[0];
+						case ListAssertion.Simple:
+							if ( ! StepSingle(result, pathHere, container, out next)) return;
 							break;
 
 						case ListAssertion.Index:
-							if (step.SingleIndex < 0 || step.SingleIndex >= container.Length) {
-								result.FailBecause(pathHere + " has length of " + container.Length + ", tried to access index " + step.SingleIndex);
-								return;
-							}
-							pathHere += "[" + step.SingleIndex + "]";
-							next = container[step.SingleIndex];
+							if ( ! StepIndex(result, step, container, out next, ref pathHere)) return;
 							break;
 
 						case ListAssertion.All:
@@ -144,11 +132,42 @@ namespace DynamicValidation {
 			ApplyPredicatesToEndOfChain(path, result, predicates, remainingChain);
 		}
 
-		static void ApplyPredicatesToEndOfChain(string path, Result result, IEnumerable<INamedPredicate> predicates, List<ChainStep> remainingChain)
+		static bool StepIndex(Result result, ChainStep step, object[] container, out object next, ref string pathHere)
 		{
+			next = null;
+			if (step.SingleIndex < 0 || step.SingleIndex >= container.Length)
+			{
+				result.FailBecause(pathHere + " has length of " + container.Length + ", tried to access index " + step.SingleIndex);
+				return false;
+			}
+			pathHere += "[" + step.SingleIndex + "]";
+			next = container[step.SingleIndex];
+			return true;
+		}
+
+		static bool StepSingle(Result result, string pathHere, object[] container, out object resultTarget)
+		{
+			resultTarget = null;
+			if (container.Length > 1)
+			{
+				result.FailBecause(pathHere + " has length of " + container.Length + ", expected 1");
+				return false;
+			}
+			if (container.Length < 1)
+			{
+				result.FailBecause(pathHere + " has no items");
+				return false;
+			}
+			resultTarget = container[0];
+			return true;
+		}
+
+		static void ApplyPredicatesToEndOfChain(string path, Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain)
+		{
+			ChainStep step;
 			if (remainingChain.Count == 1)
 			{
-				var step = remainingChain[0];
+				step = remainingChain[0];
 				try
 				{
 					result.Target = result.Target.Get(step.Name);
@@ -159,36 +178,115 @@ namespace DynamicValidation {
 					result.FailBecause(path + "." + step.Name + " is not a valid path");
 					return;
 				}
+			} else
+			{
+				step = ChainStep.SimpleStep("?");
 			}
 
+			if (result.Target is IEnumerable<object>)
+			{
+				ApplyPredicatesToTerminalEnumerable(path, result, predicates, remainingChain, step);
+			}
+			else
+			{
+				ApplyPredicatesToSimpleTerminal(path, result, predicates);
+			}
+		}
+
+		static void ApplyPredicatesToTerminalEnumerable(string path, Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain, ChainStep step)
+		{
+			var container = ((IEnumerable<object>) result.Target).Where(step.FilterPredicate).ToArray();
+			object target;
+			switch (step.ListAssertionType)
+			{
+				case ListAssertion.Simple:
+					ApplyPredicatesToSimpleTerminal(path, result, predicates);
+					break;
+
+				case ListAssertion.Single:
+					if (!StepSingle(result, path, container, out target)) return;
+					var singleResult = new Result{Target = target};
+					ApplyPredicatesToSimpleTerminal(path, singleResult, predicates);
+					result.Merge(singleResult);
+					break;
+
+				case ListAssertion.Index:
+					if (!StepIndex(result, step, container, out target, ref path)) return;
+					var indexResult = new Result{Target = target};
+					ApplyPredicatesToSimpleTerminal(path, indexResult, predicates);
+					result.Merge(indexResult);
+					break;
+
+				case ListAssertion.All:
+					CheckAll(result, predicates, path, container);
+					return;
+
+				case ListAssertion.Any:
+					CheckAny(result, predicates, path, container);
+					return;
+
+				default:
+					throw new Exception("Unexpected list assertion type");
+			}
+		}
+
+		static void ApplyPredicatesToSimpleTerminal(string path, Result result, IEnumerable<INamedPredicate> predicates)
+		{
 			foreach (var predicate in predicates)
 			{
 				string message;
 				if (!predicate.Matches(result.Target, out message)) result.FailBecause(path + " " + message);
 			}
 		}
-
-		static void CheckAnySubpaths(Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain, string pathHere, IEnumerable<object> container)
+		static void CheckAny(Result result, IList<INamedPredicate> predicates, string pathHere, IEnumerable<object>  container)
 		{
-			var j = 0;
 			var successCount = 0;
 			var subResult = new Result();
 			foreach (var route in container)
 			{
 				var cleanResult = new Result {Target = route};
-				var localPath = pathHere + "[" + j + "]";
-				WalkObjectTree(remainingChain, localPath, cleanResult, predicates);
+				var localPath = pathHere + "[any]";
+
+				ApplyPredicatesToSimpleTerminal(localPath, cleanResult, predicates);
+
 				subResult.Merge(cleanResult);
 				if (cleanResult.Success) successCount++;
-				j++;
 			}
 			if (successCount < 1)
 			{
-				result.FailBecause("no children of " + pathHere + " validated successfully");
 				result.Merge(subResult);
 			}
 		}
-
+		static void CheckAnySubpaths(Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain, string pathHere, IEnumerable<object> container)
+		{
+			var successCount = 0;
+			var subResult = new Result();
+			foreach (var route in container)
+			{
+				var cleanResult = new Result {Target = route};
+				var localPath = pathHere + "[any]";
+				WalkObjectTree(remainingChain, localPath, cleanResult, predicates);
+				subResult.Merge(cleanResult);
+				if (cleanResult.Success) successCount++;
+			}
+			if (successCount < 1)
+			{
+				result.Merge(subResult);
+			}
+		}
+		
+		static void CheckAll(Result result, IList<INamedPredicate> predicates, string pathHere, IEnumerable<object> container)
+		{
+			var i = 0;
+			foreach (var route in container)
+			{
+				var cleanResult = new Result {Target = route};
+				var localPath = pathHere + "[" + i + "]";
+				ApplyPredicatesToSimpleTerminal(localPath, cleanResult, predicates);
+				result.Merge(cleanResult);
+				i++;
+			}
+		}
 		static void CheckAllSubpaths(Result result, IList<INamedPredicate> predicates, string pathHere, List<ChainStep> remainingChain, IEnumerable<object> container)
 		{
 			var i = 0;
@@ -200,8 +298,6 @@ namespace DynamicValidation {
 				result.Merge(cleanResult);
 				i++;
 			}
-			if (! result.Success)
-				result.FailBecause("not all children of " + pathHere + " validated successfully");
 		}
 
 		static IEnumerable<INamedPredicate> AllConstraintsAsPredicates(IEnumerable<object> indexes)
