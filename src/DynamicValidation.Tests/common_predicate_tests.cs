@@ -65,7 +65,7 @@ namespace DynamicValidation.Tests
 			var result = Check.That(subject).complex[Should.NotHaveMember("childThatExists")];
 
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("Outer.complex did contained unexpected member \"childThatExists\""));
+			Assert.That(result.Reasons, Contains.Item("Outer.complex contained unexpected member \"childThatExists\""));
 		}
 
 		[Test]

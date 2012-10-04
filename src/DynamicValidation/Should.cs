@@ -197,7 +197,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 					  o => (o != null) && (o.GetSafe(memberName) == null),
-					  o => (o == null) ? "was null" : "did contained unexpected member \"" + memberName + "\""
+					  o => (o == null) ? "was null" : "contained unexpected member \"" + memberName + "\""
 					  );
 		}
 	}
