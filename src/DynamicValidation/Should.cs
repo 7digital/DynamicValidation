@@ -15,7 +15,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 						o => ((IEnumerable<object>)o).Count() == n,
-						o => "should have " + n + " items exactly"
+						o => (!((IEnumerable<object>)o).Any()) ? "has no items" : ("should have " + n + " items exactly")
 						);
 		}
 
