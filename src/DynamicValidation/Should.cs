@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DynamicValidation.Internals;
+using DynamicValidation.Reflection;
 using DynamicValidation.SpecialPredicates;
 
 // ReSharper disable PartialTypeWithSinglePart
@@ -12,6 +13,9 @@ namespace DynamicValidation
 	/// </summary>
 	public partial class Should
 	{
+		/// <summary>
+		/// Checks that the enumerable has exactly the given number of children
+		/// </summary>
 		public static INamedPredicate Have(int n)
 		{
 			return new NamedPredicate(
@@ -105,7 +109,6 @@ namespace DynamicValidation
 					  );
 			}
 		}
-
 		
 		/// <summary> Allows anything but bool == false </summary>
 		public static object NotBeFalse
@@ -177,11 +180,24 @@ namespace DynamicValidation
 					  );
 		}
 
+		/// <summary>
+		/// Checks that the type has the named member, and that it's not null
+		/// </summary>
 		public static INamedPredicate HaveMember(string memberName)
 		{
 			return new NamedPredicate(
-					  o => (o != null) && (o.GetType().GetMembers().Any(m => m.Name == memberName)),
+					  o => (o != null) && (o.GetSafe(memberName) != null),
 					  o => (o == null) ? "was null" : "did not contain member \"" + memberName + "\""
+					  );
+		}
+		/// <summary>
+		/// Checks that the type does not have the named member, or that it's null
+		/// </summary>
+		public static INamedPredicate NotHaveMember(string memberName)
+		{
+			return new NamedPredicate(
+					  o => (o != null) && (o.GetSafe(memberName) == null),
+					  o => (o == null) ? "was null" : "did contained unexpected member \"" + memberName + "\""
 					  );
 		}
 	}

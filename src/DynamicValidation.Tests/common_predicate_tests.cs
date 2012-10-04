@@ -6,13 +6,14 @@ namespace DynamicValidation.Tests
 	[TestFixture]
 	public class common_predicate_tests
 	{
+		static readonly object aNullThing = null;
 		readonly object subject = new Outer
 		{
 			container = new List<string>{
 				"one", "two", "three"
 			},
 			singleValue = "exit",
-			complex = new { childThatExists = "yes!" }
+			complex = new { childThatExists = "yes!" , childThatIsNull = aNullThing}
 		};
 
 		[Test]
@@ -40,6 +41,31 @@ namespace DynamicValidation.Tests
 
 			Assert.That(pass.Success, Is.True, pass.Reason);
 			Assert.That(fail.Success, Is.False);
+		}
+
+		[Test]
+		public void can_check_for_members_null_case()
+		{
+			var fail = Check.That(subject).complex[Should.HaveMember("childThatIsNull")];
+
+			Assert.That(fail.Success, Is.False);
+			Assert.That(fail.Reasons, Contains.Item("Outer.complex did not contain member \"childThatIsNull\""));
+		}
+
+		[Test]
+		public void can_check_for_members_negative_case()
+		{
+			var result = Check.That(subject).complex[Should.NotHaveMember("childThatIsNull")];
+
+			Assert.That(result.Success, Is.True, result.Reason);
+		}
+		[Test]
+		public void can_check_for_members_negative_case_failure()
+		{
+			var result = Check.That(subject).complex[Should.NotHaveMember("childThatExists")];
+
+			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reasons, Contains.Item("Outer.complex did contained unexpected member \"childThatExists\""));
 		}
 
 		[Test]

@@ -16,7 +16,19 @@ namespace DynamicValidation.Reflection
 			return fieldNames.Count(name=>name == memberName)
 			       + propertyNames.Count(name=>name == memberName);
 		}
-		
+
+		public static object GetSafe(this object target, string memberName)
+		{
+			try
+			{
+				return target.Get(memberName);
+			}
+			catch (FastFailureException)
+			{
+				return null;
+			}
+		}
+
 		public static object Get(this object target, string memberName)
 		{
 			var field = target.GetType().GetField(memberName);
