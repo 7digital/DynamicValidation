@@ -8,7 +8,26 @@ namespace DynamicValidation.Tests
 	{
 		readonly object subject = new Outer {container = new List<string>{
 			"one", "two", "three"
-		}};
+		},
+		singleValue = "exit"
+		};
+
+		[Test]
+		public void can_use__Or__predicates()
+		{
+			var result = Check.That(subject).singleValue[Should.Equal("enter").Or(Should.Equal("exit"))];
+
+			Assert.That(result.Success, Is.True, result.Reason);
+		}
+
+		[Test]
+		public void can_use__Or__predicates_failure_case()
+		{
+			var result = Check.That(subject).singleValue[Should.Equal("wrong").Or(Should.Equal("wronger"))];
+
+			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reasons, Contains.Item("Outer.singleValue was not equal to wrong, was not equal to wronger"));
+		}
 
 		[Test]
 		public void exact_item_count()
@@ -79,5 +98,6 @@ namespace DynamicValidation.Tests
 
 	class Outer {
 		public List<string> container;
+		public string singleValue;
 	}
 }

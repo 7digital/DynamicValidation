@@ -177,4 +177,29 @@ namespace DynamicValidation
 					  );
 		}
 	}
+
+	public static class ShouldExtensions
+	{
+		/// <summary>
+		/// Succeeds if either left or right succeeds.
+		/// If both fail, merges and flattens messages.
+		/// </summary>
+		public static INamedPredicate Or(this INamedPredicate left, INamedPredicate right)
+		{
+			return new NamedPredicate(
+				o =>
+					{
+						string dummy;
+						return left.Matches(o, out dummy) || right.Matches(o, out dummy);
+					},
+				o =>
+					{
+						string leftMsg, rightMsg;
+						left.Matches(o, out leftMsg);
+						right.Matches(o, out rightMsg);
+						return leftMsg + ", " + rightMsg;
+					}
+				);
+		}
+	}
 }
