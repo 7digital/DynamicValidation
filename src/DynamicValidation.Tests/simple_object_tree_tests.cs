@@ -52,6 +52,23 @@ namespace DynamicValidation.Tests {
 		}
 
 		[Test]
+		public void can_check_against_a_list_of_unacceptable_values()
+		{
+			var bad = new List<string>{"Hello, John", "Hello, Simon", "Hello, Jeff"};
+			var result = Check.That(subject).Two.X.Value[Should.NotEqualOneOf(bad)];
+
+			Assert.That(result.Success, Is.True, result.Reason);
+		}
+		[Test]
+		public void can_check_against_a_list_of_unacceptable_values_failure_case()
+		{
+			var bad = new List<string>{"Hello, John", "Hello, world", "Hello, universe"};
+			var result = Check.That(subject).Two.X.Value[Should.NotEqualOneOf(bad)];
+
+			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reasons, Contains.Item("BaseThing.Two.X.Value got \"Hello, world\" which is not an acceptable value"));
+		}
+		[Test]
 		public void can_get_given_predicate_messages () {
 			var result = Check.That(subject).One[Should.BeNull];
 			Assert.That(result.Success, Is.False);

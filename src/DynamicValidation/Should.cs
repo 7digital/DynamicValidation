@@ -188,6 +188,15 @@ namespace DynamicValidation
 					  );
 		}
 
+		public static INamedPredicate NotEqualOneOf(IEnumerable<object> unacceptableValues)
+		{
+			if (unacceptableValues == null) throw new ArgumentException("null values passed to Should.NotEqualOneOf");
+			return new NamedPredicate(
+					  o => ! unacceptableValues.Contains(o),
+					  o => "got \""+o+"\" which is not an acceptable value"
+					  );
+		}
+
 		/// <summary>
 		/// Checks that the type has the named member, and that it's not null
 		/// </summary>
