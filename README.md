@@ -11,16 +11,17 @@ constraints.
 
 Todo
 ----
-* Should not be sensitive about NUnit.Framework version (if possible) -- maybe reflect stuff out?
-  Maybe remove IResoveConstraint stuff?
+* Maybe handle recursive data structures by having another List assertion strategy ("all,recurse"?)
+  will assert on matching level, and any children with same name.
+  (this would allow for `group->group->group...->item`)
 
 Example
 -------
 
 ```
-Check.Result result = Check.That(MyObject).Identifier.LocalIdentifier[Is.Not.Null];
+Check.Result result = Check.That(MyObject).Identifier.LocalIdentifier[Should.NotBeNull];
 
-if ( ! result.Success) throw new Exception(string.Join("\r\n",result.Reasons));
+if ( ! result.Success) throw new Exception(result.Reason);
 ```
 
 The idea is to get the check object, walk the object tree
@@ -34,15 +35,14 @@ then that's a failure with it's own message.
 
 To check each item in an enumerable, you can use
 ```
-var result = Check.That(subject).container[Should.AllMatch(Is.Not.Null)];
+var result = Check.That(subject).container("all")[Should.NotBeNull)];
 ```
 
 If the validation needs to check children of an enumerable
-should be able to define like this:
+can define like this:
 ```
     Check.That(thing).a.b[Should.HaveAtLeast(1)]
-    Check.That(thing).a.b("all").c[Is.NotEmpty]
-    Check.That(thing).a.b("first").c.d[Is.NotEmpty]
-    Check.That(thing).a.b("single").c.d[Is.NotEmpty]
+    Check.That(thing).a.b("all").c[Should.NotBeEmpty]
+    Check.That(thing).a.b("first").c.d[Should.NotBeEmpty]
+    Check.That(thing).a.b("single").c.d[Should.NotBeEmpty]
 ```
-but it's not implemented yet.
