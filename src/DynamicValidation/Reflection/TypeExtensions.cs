@@ -39,14 +39,12 @@ namespace DynamicValidation.Reflection
 
 				try
 				{
-					field = prop.GetBackingField();
+					return prop.GetValue(target,null);
 				} catch
 				{
 					return null;
 				}
 			}
-
-			if (field == null) return null;
 
 			return field.GetValue(target);
 		}
