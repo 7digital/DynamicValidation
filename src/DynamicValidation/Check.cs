@@ -13,6 +13,20 @@ namespace DynamicValidation {
 
 		public static Result With(object subject, params Func<dynamic, Result>[] cases)
 		{
+			if (subject is IEnumerable<object>)
+			{
+				return WithStems(((IEnumerable<object>)subject).Cast<Check>(), cases);
+			}
+			if (subject is Check)
+			{
+				return WithStem((Check)subject, cases);
+			}
+			return WithSubject(subject, cases);
+		}
+
+		#region group cases
+		static Result WithSubject(object subject, params Func<dynamic, Result>[] cases)
+		{
 			var result = new Result();
 			foreach (var check in cases)
 			{
@@ -20,7 +34,21 @@ namespace DynamicValidation {
 			}
 			return result;
 		}
-		public static Result With(Check subject, params Func<dynamic, Result>[] cases)
+
+		static Result WithStems(IEnumerable<Check> subjects, params Func<dynamic, Result>[] cases)
+		{
+			var result = new Result();
+			foreach (var subject in subjects)
+			{
+				foreach (var check in cases)
+				{
+					result.Merge(check(subject));
+				}
+			}
+			return result;
+		}
+
+		static Result WithStem(Check subject, params Func<dynamic, Result>[] cases)
 		{
 			var result = new Result();
 			foreach (var check in cases)
@@ -29,6 +57,7 @@ namespace DynamicValidation {
 			}
 			return result;
 		}
+		#endregion
 
 		#region Building Chain
 

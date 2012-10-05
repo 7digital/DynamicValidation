@@ -40,6 +40,7 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="assert_on_multiple_stems.cs" />
     <Compile Include="common_predicate_tests.cs" />
     <Compile Include="complex_enumeration_tests.cs" />
     <Compile Include="deep_fragment_tests.cs" />
