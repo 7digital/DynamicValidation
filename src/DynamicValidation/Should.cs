@@ -65,6 +65,14 @@ namespace DynamicValidation
 						);
 		}
 
+		public static INamedPredicate HaveNone(Func<object, bool> predicate, string message)
+		{
+			return new NamedPredicate(
+						o => ! ((IEnumerable<object>)o).Any(predicate),
+						o => message
+						);
+		}
+
 		public static INamedPredicate NotBeNull
 		{
 			get

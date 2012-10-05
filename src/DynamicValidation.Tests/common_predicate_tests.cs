@@ -103,7 +103,17 @@ namespace DynamicValidation.Tests
 			Assert.That(fail.Reasons, Contains.Item("Outer.container Expected all items to be 'two'"));
 		}
 		
-		
+		[Test]
+		public void can_check_no_items_match()
+		{
+			var pass = Check.That(subject).container[Should.HaveNone(o=>o as string=="four", "four found!")];
+			var fail = Check.That(subject).container[Should.HaveNone(o=>o as string=="three", "three found!")];
+
+			Assert.That(pass.Success, Is.True, pass.Reason);
+			Assert.That(fail.Success, Is.False);
+			Assert.That(fail.Reasons, Contains.Item("Outer.container three found!"));
+		}
+
 		[Test]
 		public void minimum_item_count()
 		{
