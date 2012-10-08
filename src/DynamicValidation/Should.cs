@@ -79,7 +79,7 @@ namespace DynamicValidation
 			{
 				return new NamedPredicate(
 					  o => o != null,
-					  o => "was null"
+					  o => "is null"
 					  );
 			}
 		}
@@ -136,8 +136,11 @@ namespace DynamicValidation
 			{
 				return new NamedPredicate(
 					  o => ! string.IsNullOrEmpty(o as string),
-					  o => (o is string) ? "was empty" : "was not a string"
-					  );
+					  o => {
+						  if (o == null) return "is missing";
+						  return (o is string) ? "is empty" : "is not a string";
+					  }
+					);
 			}
 		}
 
@@ -147,7 +150,7 @@ namespace DynamicValidation
 			{
 				return new NamedPredicate(
 					  o => string.IsNullOrEmpty(o as string),
-					  o => (o is string) ? ("was " + o) : "was not a string"
+					  o => (o is string) ? ("is " + o) : "is not a string"
 					  );
 			}
 		}
@@ -158,7 +161,7 @@ namespace DynamicValidation
 			{
 				return new NamedPredicate(
 					  o => o == null,
-					  o => "was not null"
+					  o => "is not null"
 					  );
 			}
 		}
@@ -167,7 +170,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 				o => o.Equals(aValue),
-				o => "was not equal to "+aValue
+				o => "is not equal to "+aValue
 				);
 		}
 
@@ -175,7 +178,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 					  o => ((o as string) != null) && ((string)o).Contains(substring),
-					  o => (o is string) ? "did not contain \""+substring+"\"" : "was not a string"
+					  o => (o is string) ? "did not contain \""+substring+"\"" : "is not a string"
 					  );
 		}
 
@@ -204,7 +207,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 					  o => (o != null) && (o.GetSafe(memberName) != null),
-					  o => (o == null) ? "was null" : "did not contain member \"" + memberName + "\""
+					  o => (o == null) ? "is null" : "did not contain member \"" + memberName + "\""
 					  );
 		}
 		/// <summary>
@@ -214,7 +217,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 					  o => (o != null) && (o.GetSafe(memberName) == null),
-					  o => (o == null) ? "was null" : "contained unexpected member \"" + memberName + "\""
+					  o => (o == null) ? "is null" : "contained unexpected member \"" + memberName + "\""
 					  );
 		}
 	}

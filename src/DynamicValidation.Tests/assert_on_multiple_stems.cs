@@ -45,8 +45,8 @@ namespace DynamicValidation.Tests
 				);
 
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("Root.one.two.three.check was not equal to World"));
-			Assert.That(result.Reasons, Contains.Item("Root.two.three.check was not equal to World"));
+			Assert.That(result.Reasons, Contains.Item("Root.one.two.three.check is not equal to World"));
+			Assert.That(result.Reasons, Contains.Item("Root.two.three.check is not equal to World"));
 		}
 	}
 

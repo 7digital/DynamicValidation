@@ -30,7 +30,7 @@ namespace DynamicValidation.Tests
 			var result = Check.That(subject).singleValue[Should.Equal("wrong").Or(Should.Equal("wronger"))];
 
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("Outer.singleValue was not equal to wrong, was not equal to wronger"));
+			Assert.That(result.Reasons, Contains.Item("Outer.singleValue is not equal to wrong, is not equal to wronger"));
 		}
 
 		[Test]
@@ -83,12 +83,12 @@ namespace DynamicValidation.Tests
 		public void __should_be__checks_target_against_a_lambda()
 		{
 			// passing a lambda in a closure works around the dynamic issues.
-			var pass = Check.That(subject).container[Should.Be(o=>o != null, "Was null, and that's bad!")];
-			var fail = Check.That(subject).container[Should.Be(o=>o == null, "Was not null... unexpected!")];
+			var pass = Check.That(subject).container[Should.Be(o=>o != null, "is null, and that's bad!")];
+			var fail = Check.That(subject).container[Should.Be(o=>o == null, "is not null... unexpected!")];
 
 			Assert.That(pass.Success);
 			Assert.That(fail.Success, Is.False);
-			Assert.That(fail.Reasons, Contains.Item("Outer.container Was not null... unexpected!"));
+			Assert.That(fail.Reasons, Contains.Item("Outer.container is not null... unexpected!"));
 		}
 		
 		[Test]

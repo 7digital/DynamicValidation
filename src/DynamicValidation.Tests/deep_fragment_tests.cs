@@ -24,7 +24,7 @@ namespace DynamicValidation.Tests
 			Assert.That(r2.Success, Is.True, r2.Reason);
 
 			Assert.That(r3.Success, Is.False);
-			Assert.That(r3.Reason, Is.StringContaining(".a.deep.way.down.different.Path was not equal to Howdy"));
+			Assert.That(r3.Reason, Is.StringContaining(".a.deep.way.down.different.Path is not equal to Howdy"));
 		}
 
 		[Test]
@@ -44,7 +44,7 @@ namespace DynamicValidation.Tests
 			Assert.That(pass.Success, Is.True, pass.Reason);
 
 			Assert.That(fail.Success, Is.False);
-			Assert.That(fail.Reason, Is.StringContaining(".a.deep.way.down.different.Path was not equal to Howdy"));
+			Assert.That(fail.Reason, Is.StringContaining(".a.deep.way.down.different.Path is not equal to Howdy"));
 		}
 	}
 }

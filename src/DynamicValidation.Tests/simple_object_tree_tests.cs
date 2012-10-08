@@ -72,7 +72,7 @@ namespace DynamicValidation.Tests {
 		public void can_get_given_predicate_messages () {
 			var result = Check.That(subject).One[Should.BeNull];
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("BaseThing.One was not null"));
+			Assert.That(result.Reasons, Contains.Item("BaseThing.One is not null"));
 		}
 
 		[Test]
