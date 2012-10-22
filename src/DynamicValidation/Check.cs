@@ -88,7 +88,7 @@ namespace DynamicValidation {
 					else result = Add(ChainStep.Complex(binder.Name, args[0].ToString(), 0, ChainStep.Anything));
 					break;
 				case 2: // like `list("all", o => o.something != null)`
-					result = Add(ChainStep.Complex(binder.Name, args[0].ToString(), 0, (Func<object, bool>)args[1]));
+					result = Add(ChainStep.Complex(binder.Name, args[0].ToString(), 0, (INamedPredicate)args[1]));
 					break;
 				default: // don't understand!
 					throw new ArgumentException("I don't understand the arguments to "+binder.Name);
@@ -139,9 +139,13 @@ namespace DynamicValidation {
 					return;
 				}
 
-				if (next is IEnumerable<object>) {
-					var container = ((IEnumerable<object>)next).Where(step.FilterPredicate).ToArray();
-					switch (step.ListAssertionType) {
+				if (next is IEnumerable<object>)
+				{
+					string stepMsg;
+					var container = FilterWithNamedPredicate((IEnumerable<object>)next, step, out stepMsg);
+					pathHere += stepMsg;
+					switch (step.ListAssertionType)
+					{
 						case ListAssertion.Single:
 						case ListAssertion.Simple:
 							if ( ! StepSingle(result, pathHere, container, out next)) return;
@@ -233,7 +237,9 @@ namespace DynamicValidation {
 
 		static void ApplyPredicatesToTerminalEnumerable(string path, Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain, ChainStep step)
 		{
-			var container = ((IEnumerable<object>) result.Target).Where(step.FilterPredicate).ToArray();
+			string stepMsg;
+			var container = FilterWithNamedPredicate((IEnumerable<object>)result.Target, step, out stepMsg);
+			path += stepMsg;
 			object target;
 			switch (step.ListAssertionType)
 			{
@@ -268,6 +274,7 @@ namespace DynamicValidation {
 			}
 		}
 
+		
 		static void ApplyPredicatesToSimpleTerminal(string path, Result result, IEnumerable<INamedPredicate> predicates)
 		{
 			foreach (var predicate in predicates)
@@ -283,7 +290,7 @@ namespace DynamicValidation {
 			foreach (var route in container)
 			{
 				var cleanResult = new Result {Target = route};
-				var localPath = pathHere + "[any]";
+				var localPath = pathHere;
 
 				ApplyPredicatesToSimpleTerminal(localPath, cleanResult, predicates);
 
@@ -302,7 +309,7 @@ namespace DynamicValidation {
 			foreach (var route in container)
 			{
 				var cleanResult = new Result {Target = route};
-				var localPath = pathHere + "[any]";
+				var localPath = pathHere;
 				WalkObjectTree(remainingChain, localPath, cleanResult, predicates);
 				subResult.Merge(cleanResult);
 				if (cleanResult.Success) successCount++;
@@ -336,6 +343,18 @@ namespace DynamicValidation {
 				result.Merge(cleanResult);
 				i++;
 			}
+		}
+
+		static object[] FilterWithNamedPredicate(IEnumerable<object> source, ChainStep step, out string message)
+		{
+			string stepMsg = "";
+			var container = source.Where(o => step.FilterPredicate.Matches(o, out stepMsg)).ToArray();
+
+			message = (string.IsNullOrEmpty(stepMsg))
+				? ""
+				: "(Matching: " + stepMsg + ")";
+
+			return container;
 		}
 
 		static IEnumerable<INamedPredicate> AllConstraintsAsPredicates(IEnumerable<object> indexes)

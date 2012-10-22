@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
 
@@ -66,7 +65,7 @@ namespace DynamicValidation.Tests
 			var result = Check.That(subject).container("any").b[Should.BeFalse];
 
 			Assert.That(result.Success, Is.False);
-			Assert.That(result.Reasons, Contains.Item("X.container[any].b expected False but got True"));
+			Assert.That(result.Reasons, Contains.Item("X.container.b expected False but got True"));
 		}
 
 		[Test]
@@ -100,8 +99,8 @@ namespace DynamicValidation.Tests
 		{
 			var message = new FakeMessage();
  
-			Func<object, bool> IsBundle = o => ((Release) o).ReleaseTypes.Single().Value == "Bundle";
-			Func<object, bool> IsTrack = o => ((Release) o).ReleaseTypes.Single().Value == "TrackRelease";
+			var IsBundle = Should.Be(o => ((Release) o).ReleaseTypes.Single().Value == "Bundle", "Bundle");
+			var IsTrack = Should.Be(o => ((Release) o).ReleaseTypes.Single().Value == "TrackRelease", "Track release");
 
 			// This checks that we have exactly 1 bundle release that has a non-empty ICPN
 			// and that all track releases have non-empty ISRCs
@@ -111,6 +110,32 @@ namespace DynamicValidation.Tests
 
 			Assert.That(result1.Success, Is.True, "Bundle ICPN: " + result1.Reason);
 			Assert.That(result2.Success, Is.True, "Track ISRC: " + result2.Reason);
+		}
+
+		[Test]
+		public void can_use_predicates_to_filter_deep_enumerations_failure_case_single()
+		{
+			var message = new FakeMessage();
+ 
+			var IsBundle = Should.Be(o => ((Release) o).ReleaseTypes.Single().Value == "Bundle", "Bundle");
+
+			var result = Check.That(message).Releases("single", IsBundle).ReleaseIds.ICPN.Value[Should.BeEmpty];
+
+			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reasons, Contains.Item("FakeMessage.Releases(Matching: Bundle).ReleaseIds.ICPN.Value should be empty but is \"bundle icpn\""));
+		}
+		[Test]
+		public void can_use_predicates_to_filter_deep_enumerations_failure_case_all()
+		{
+			var message = new FakeMessage();
+ 
+			var IsTrack = Should.Be(o => ((Release) o).ReleaseTypes.Single().Value == "TrackRelease", "Track release");
+
+			var result = Check.That(message).Releases("all", IsTrack).ReleaseIds.ISRC.Value[Should.BeEmpty];
+
+			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reasons, Contains.Item("FakeMessage.Releases(Matching: Track release)[0].ReleaseIds.ISRC.Value should be empty but is \"first track isrc\""));
+			Assert.That(result.Reasons, Contains.Item("FakeMessage.Releases(Matching: Track release)[1].ReleaseIds.ISRC.Value should be empty but is \"second track isrc\""));
 		}
 
 		[Test]

@@ -150,7 +150,7 @@ namespace DynamicValidation
 			{
 				return new NamedPredicate(
 					  o => string.IsNullOrEmpty(o as string),
-					  o => (o is string) ? ("is " + o) : "is not a string"
+					  o => (o is string) ? ("should be empty but is \"" + o + "\"") : "is not a string"
 					  );
 			}
 		}

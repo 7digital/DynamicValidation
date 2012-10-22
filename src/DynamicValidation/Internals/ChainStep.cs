@@ -7,7 +7,7 @@ namespace DynamicValidation.Internals
 		public string Name { get; set; }
 		public int SingleIndex { get; set; }
 		public ListAssertion ListAssertionType { get; set; }
-		public Func<object, bool> FilterPredicate { get; set; }
+		public INamedPredicate FilterPredicate { get; set; }
 
 		public static ChainStep SimpleStep(string name)
 		{
@@ -19,7 +19,7 @@ namespace DynamicValidation.Internals
 			};
 		}
 
-		public static ChainStep Complex(string name, string assertionName, int index, Func<object, bool> filter)
+		public static ChainStep Complex(string name, string assertionName, int index, INamedPredicate filter)
 		{
 			return new ChainStep{
 				Name = name,
@@ -41,6 +41,15 @@ namespace DynamicValidation.Internals
 			}
 		}
 
-		public static bool Anything(object arg) { return true; }
+		public static INamedPredicate Anything { get { return new MatchAnything(); } }
+		class MatchAnything : INamedPredicate
+		{
+			public bool Matches(object actual, out string message)
+			{
+				message = "";
+				return true;
+			}
+		}
 	}
+
 }
