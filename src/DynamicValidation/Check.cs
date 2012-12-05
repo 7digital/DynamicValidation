@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -225,9 +226,9 @@ namespace DynamicValidation {
 				step = ChainStep.SimpleStep("?");
 			}
 
-			if (result.Target is IEnumerable<object>)
+			if (result.Target is IEnumerable)
 			{
-				ApplyPredicatesToTerminalEnumerable(path, result, predicates, remainingChain, step);
+				ApplyPredicatesToTerminalEnumerable(path, result, predicates, step);
 			}
 			else
 			{
@@ -235,10 +236,10 @@ namespace DynamicValidation {
 			}
 		}
 
-		static void ApplyPredicatesToTerminalEnumerable(string path, Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain, ChainStep step)
+		static void ApplyPredicatesToTerminalEnumerable(string path, Result result, IList<INamedPredicate> predicates, ChainStep step)
 		{
 			string stepMsg;
-			var container = FilterWithNamedPredicate((IEnumerable<object>)result.Target, step, out stepMsg);
+			var container = FilterWithNamedPredicate((IEnumerable)result.Target, step, out stepMsg);
 			path += stepMsg;
 			object target;
 			switch (step.ListAssertionType)
@@ -345,10 +346,10 @@ namespace DynamicValidation {
 			}
 		}
 
-		static object[] FilterWithNamedPredicate(IEnumerable<object> source, ChainStep step, out string message)
+		static object[] FilterWithNamedPredicate(IEnumerable source, ChainStep step, out string message)
 		{
 			string stepMsg = "";
-			var container = source.Where(o => step.FilterPredicate.Matches(o, out stepMsg)).ToArray();
+			var container = source.Cast<object>().Where(o => step.FilterPredicate.Matches(o, out stepMsg)).ToArray();
 
 			message = (string.IsNullOrEmpty(stepMsg))
 				? ""

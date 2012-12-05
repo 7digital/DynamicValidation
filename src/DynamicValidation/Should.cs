@@ -220,6 +220,17 @@ namespace DynamicValidation
 					  o => (o == null) ? "is null" : "contained unexpected member \"" + memberName + "\""
 					  );
 		}
+
+		public static INamedPredicate BeBefore(DateTime date)
+		{
+			return new NamedPredicate(o => DateIsBefore(o, date), "boo");
+		}
+
+		static bool DateIsBefore(object o, DateTime targetDate)
+		{
+			var date = (DateTime)o;
+			return date < targetDate;
+		}
 	}
 
 	public static class ShouldExtensions
