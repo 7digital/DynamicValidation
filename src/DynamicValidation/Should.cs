@@ -237,6 +237,12 @@ namespace DynamicValidation
 			return new NamedPredicate(o => DateIsBefore(o, date), "should be before " + date);
 		}
 
+		public static INamedPredicate BeAfter(DateTime date)
+		{
+			return new NamedPredicate(o => DateIsAfter(o, date), "should be after " + date);
+		}
+
+
 		public static INamedPredicate BeBefore(dynamic checkPath)
 		{
 			Check.Result result = checkPath[Should.BeAnything];
@@ -256,6 +262,32 @@ namespace DynamicValidation
 			return new NamedPredicate(o => DateIsNullOrBefore(o, date), "should be null or before " + message);
 		}
 
+		public static INamedPredicate BeAfter(dynamic checkPath)
+		{
+			Check.Result result = checkPath[Should.BeAnything];
+			var date = result.ValueChecked as DateTime?;
+			var message = result.Path;
+
+			if (date == null) return new NamedPredicate(o => false, "expected a date");
+			return new NamedPredicate(o => DateIsAfter(o, date.Value), "should be after " + message);
+		}
+
+		public static INamedPredicate BeNullOrAfter(dynamic checkPath)
+		{
+			Check.Result result = checkPath[Should.BeAnything];
+			var date = result.ValueChecked as DateTime?;
+			var message = result.Path;
+
+			return new NamedPredicate(o => DateIsNullOrAfter(o, date), "should be null or after " + message);
+		}
+
+		static bool DateIsNullOrAfter(object o, DateTime? targetDate)
+		{
+			if (targetDate == null) return true;
+			var date = (DateTime)o;
+			return date > targetDate;
+		}
+
 		static bool DateIsNullOrBefore(object o, DateTime? targetDate)
 		{
 			if(targetDate == null) return true;
@@ -268,6 +300,13 @@ namespace DynamicValidation
 			var date = (DateTime)o;
 			return date < targetDate;
 		}
+
+		static bool DateIsAfter(object o, DateTime targetDate)
+		{
+			var date = (DateTime)o;
+			return date > targetDate;
+		}
+	
 	}
 
 	public static class ShouldExtensions
