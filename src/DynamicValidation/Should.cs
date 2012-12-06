@@ -247,6 +247,22 @@ namespace DynamicValidation
 			return new NamedPredicate(o => DateIsBefore(o, date.Value), "should be before " + message);
 		}
 
+		public static INamedPredicate BeNullOrBefore(dynamic checkPath)
+		{
+			Check.Result result = checkPath[Should.BeAnything];
+			var date = result.ValueChecked as DateTime?;
+			var message = result.Path;
+
+			return new NamedPredicate(o => DateIsNullOrBefore(o, date), "should be null or before " + message);
+		}
+
+		static bool DateIsNullOrBefore(object o, DateTime? targetDate)
+		{
+			if(targetDate == null) return true;
+			var date = (DateTime)o;
+			return date < targetDate;
+		}
+
 		static bool DateIsBefore(object o, DateTime targetDate)
 		{
 			var date = (DateTime)o;

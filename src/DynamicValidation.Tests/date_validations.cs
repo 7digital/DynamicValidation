@@ -81,5 +81,32 @@ namespace DynamicValidation.Tests
 
 			Assert.That(result.Success, Is.True, result.Reason);
 		}
+
+		[Test]
+		public void Should_pass_validation_when_date_is_null()
+		{
+			var obj = new
+			{
+				earlier = new K
+				{
+					Date = new DateTime(1979, 01, 01)
+				},
+				later = new K
+				{
+					Date = null
+				}
+			};
+
+			Check.Result result = Check.That(obj).earlier.Date[Should.BeNullOrBefore(Check.That(obj).later.Date)];
+
+			Console.WriteLine(result.Reason);
+
+			Assert.That(result.Success, Is.True, result.Reason);
+		}
+		class K
+		{
+			public DateTime? Date { get; set; }
+		}
 	}
+	
 }
