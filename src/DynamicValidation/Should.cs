@@ -241,8 +241,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(o => DateIsAfter(o, date), "should be after " + date);
 		}
-
-
+		
 		public static INamedPredicate BeBefore(dynamic checkPath)
 		{
 			Check.Result result = checkPath[Should.BeAnything];
@@ -283,14 +282,14 @@ namespace DynamicValidation
 
 		static bool DateIsNullOrAfter(object o, DateTime? targetDate)
 		{
-			if (targetDate == null) return true;
+			if (o == null) return true;
 			var date = (DateTime)o;
 			return date > targetDate;
 		}
 
 		static bool DateIsNullOrBefore(object o, DateTime? targetDate)
 		{
-			if(targetDate == null) return true;
+			if(o == null) return true;
 			var date = (DateTime)o;
 			return date < targetDate;
 		}
