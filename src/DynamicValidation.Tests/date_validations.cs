@@ -41,12 +41,34 @@ namespace DynamicValidation.Tests
 
 
 		[Test]
-		public void Should_be_able_to_check_dates_in_one_path_against_dates_in_another_path()
+		public void Should_be_able_to_check_dates_in_one_path_against_dates_in_another_path_failing()
 		{
 			var obj = new
 			{
 				earlier = new {
 					date = new DateTime(1980, 01, 01)
+				},
+				later = new {
+					date = new DateTime(1979, 01, 01)
+				}
+			};
+
+			Check.Result result = Check.That(obj).earlier.date[Should.BeBefore(Check.That(obj).later.date)];
+
+			Console.WriteLine(result.Reason);
+
+			Assert.That(result.Success, Is.False, result.Reason);
+			Assert.That(result.Reason, Is.StringContaining(".earlier.date should be before"));
+			Assert.That(result.Reason, Is.StringEnding(".later.date"));
+		}
+
+		[Test]
+		public void Should_be_able_to_check_dates_in_one_path_against_dates_in_another_path_passing()
+		{
+			var obj = new
+			{
+				earlier = new {
+					date = new DateTime(1979, 01, 01)
 				},
 				later = new {
 					date = new DateTime(1980, 01, 01)
@@ -55,8 +77,9 @@ namespace DynamicValidation.Tests
 
 			Check.Result result = Check.That(obj).earlier.date[Should.BeBefore(Check.That(obj).later.date)];
 
-			Assert.That(result.Success, Is.False, result.Reason);
-			Assert.That(result.Reason, Is.StringEnding(".earlier.date should be before 01/01/1980 00:00:00"));
+			Console.WriteLine(result.Reason);
+
+			Assert.That(result.Success, Is.True, result.Reason);
 		}
 	}
 }

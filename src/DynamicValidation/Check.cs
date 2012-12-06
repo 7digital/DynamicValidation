@@ -113,12 +113,13 @@ namespace DynamicValidation {
 
 			result.Target = subject;
 			string pathSoFar = subject.GetType().Name;
-			result.ValueChecked = WalkObjectTree(chain, pathSoFar, result, predicates);
-			
+			result.ValueChecked = WalkObjectTree(chain, ref pathSoFar, result, predicates);
+			result.Path = pathSoFar;
+
 			return true;
 		}
 
-		static object WalkObjectTree(List<ChainStep> chain, string path, Result result, IList<INamedPredicate> predicates)
+		static object WalkObjectTree(List<ChainStep> chain, ref string path, Result result, IList<INamedPredicate> predicates)
 		{
 			var remainingChain = chain;
 			while (remainingChain.Count > 1)
@@ -172,7 +173,7 @@ namespace DynamicValidation {
 				path = pathHere;
 			}
 
-			return ApplyPredicatesToEndOfChain(path, result, predicates, remainingChain);
+			return ApplyPredicatesToEndOfChain(ref path, result, predicates, remainingChain);
 		}
 
 		static bool StepIndex(Result result, ChainStep step, object[] container, out object next, ref string pathHere)
@@ -205,7 +206,7 @@ namespace DynamicValidation {
 			return true;
 		}
 
-		static object ApplyPredicatesToEndOfChain(string path, Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain)
+		static object ApplyPredicatesToEndOfChain(ref string path, Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain)
 		{
 			ChainStep step;
 			if (remainingChain.Count == 1)
@@ -312,7 +313,7 @@ namespace DynamicValidation {
 			{
 				var cleanResult = new Result {Target = route};
 				var localPath = pathHere;
-				WalkObjectTree(remainingChain, localPath, cleanResult, predicates);
+				WalkObjectTree(remainingChain, ref localPath, cleanResult, predicates);
 				subResult.Merge(cleanResult);
 				if (cleanResult.Success) successCount++;
 			}
@@ -341,7 +342,7 @@ namespace DynamicValidation {
 			{
 				var cleanResult = new Result {Target = route};
 				var localPath = pathHere + "[" + i + "]";
-				WalkObjectTree(remainingChain, localPath, cleanResult, predicates);
+				WalkObjectTree(remainingChain, ref localPath, cleanResult, predicates);
 				result.Merge(cleanResult);
 				i++;
 			}
@@ -409,6 +410,9 @@ namespace DynamicValidation {
 			/// Null if there was a failure in the chain
 			/// </summary>
 			public object ValueChecked { get; set; }
+
+			/// <summary> The entire requested path </summary>
+			public string Path { get; set; }
 
 			public void Merge(Result otherResult) {
 				Success &= otherResult.Success;

@@ -240,10 +240,11 @@ namespace DynamicValidation
 		public static INamedPredicate BeBefore(dynamic checkPath)
 		{
 			Check.Result result = checkPath[Should.BeAnything];
-			var dateTime = result.ValueChecked as DateTime?;
+			var date = result.ValueChecked as DateTime?;
+			var message = result.Path;
 
-			if (dateTime == null) return new NamedPredicate(o =>false, "expected a date");
-			return BeBefore(dateTime.Value);
+			if (date == null) return new NamedPredicate(o => false, "expected a date");
+			return new NamedPredicate(o => DateIsBefore(o, date.Value), "should be before " + message);
 		}
 
 		static bool DateIsBefore(object o, DateTime targetDate)
