@@ -223,7 +223,7 @@ namespace DynamicValidation
 
 		public static INamedPredicate BeBefore(DateTime date)
 		{
-			return new NamedPredicate(o => DateIsBefore(o, date), "boo");
+			return new NamedPredicate(o => DateIsBefore(o, date), "cannot precede " + date);
 		}
 
 		static bool DateIsBefore(object o, DateTime targetDate)

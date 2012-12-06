@@ -30,12 +30,13 @@ namespace DynamicValidation.Tests
 				dates = new List<DateTime>
 				{
 					new DateTime(1980, 01, 01),
-					new DateTime(1980, 01, 01),
 				}
 			};
-			Check.Result result = Check.That(obj).dates("all")[Should.BeBefore(new DateTime(1012, 01, 01))];
+			var expectedDate = new DateTime(1012, 01, 01);
+			Check.Result result = Check.That(obj).dates("all")[Should.BeBefore(expectedDate)];
 
 			Assert.That(result.Success, Is.False, result.Reason);
+			Assert.That(result.Reason, Is.StringEnding("cannot precede " + expectedDate));
 		}
 	}
 }
