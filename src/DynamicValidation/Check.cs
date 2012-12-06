@@ -113,12 +113,12 @@ namespace DynamicValidation {
 
 			result.Target = subject;
 			string pathSoFar = subject.GetType().Name;
-			WalkObjectTree(chain, pathSoFar, result, predicates);
-
+			result.ValueChecked = WalkObjectTree(chain, pathSoFar, result, predicates);
+			
 			return true;
 		}
 
-		static void WalkObjectTree(List<ChainStep> chain, string path, Result result, IList<INamedPredicate> predicates)
+		static object WalkObjectTree(List<ChainStep> chain, string path, Result result, IList<INamedPredicate> predicates)
 		{
 			var remainingChain = chain;
 			while (remainingChain.Count > 1)
@@ -132,37 +132,37 @@ namespace DynamicValidation {
 					next = result.Target.Get(step.Name);
 				} catch (FastFailureException) {
 					result.FailBecause(pathHere + " is not a valid path");
-					return;
+					return null;
 				}
 
 				if (next == null) {
 					result.FailBecause(pathHere + " is null or not accessible");
-					return;
+					return null;
 				}
 
-				if (next is IEnumerable<object>)
+				if (next is IEnumerable)
 				{
 					string stepMsg;
-					var container = FilterWithNamedPredicate((IEnumerable<object>)next, step, out stepMsg);
+					var container = FilterWithNamedPredicate((IEnumerable)next, step, out stepMsg);
 					pathHere += stepMsg;
 					switch (step.ListAssertionType)
 					{
 						case ListAssertion.Single:
 						case ListAssertion.Simple:
-							if ( ! StepSingle(result, pathHere, container, out next)) return;
+							if ( ! StepSingle(result, pathHere, container, out next)) return null;
 							break;
 
 						case ListAssertion.Index:
-							if ( ! StepIndex(result, step, container, out next, ref pathHere)) return;
+							if ( ! StepIndex(result, step, container, out next, ref pathHere)) return null;
 							break;
 
 						case ListAssertion.All:
 							CheckAllSubpaths(result, predicates, pathHere, remainingChain, container);
-							return;
+							return null;
 
 						case ListAssertion.Any:
 							CheckAnySubpaths(result, predicates, remainingChain, pathHere, container);
-							return;
+							return null;
 
 						default: throw new Exception("Unexpected list assertion type");
 					}
@@ -172,7 +172,7 @@ namespace DynamicValidation {
 				path = pathHere;
 			}
 
-			ApplyPredicatesToEndOfChain(path, result, predicates, remainingChain);
+			return ApplyPredicatesToEndOfChain(path, result, predicates, remainingChain);
 		}
 
 		static bool StepIndex(Result result, ChainStep step, object[] container, out object next, ref string pathHere)
@@ -205,7 +205,7 @@ namespace DynamicValidation {
 			return true;
 		}
 
-		static void ApplyPredicatesToEndOfChain(string path, Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain)
+		static object ApplyPredicatesToEndOfChain(string path, Result result, IList<INamedPredicate> predicates, List<ChainStep> remainingChain)
 		{
 			ChainStep step;
 			if (remainingChain.Count == 1)
@@ -219,7 +219,7 @@ namespace DynamicValidation {
 				catch (FastFailureException)
 				{
 					result.FailBecause(path + "." + step.Name + " is not a valid path");
-					return;
+					return null;
 				}
 			} else
 			{
@@ -234,6 +234,7 @@ namespace DynamicValidation {
 			{
 				ApplyPredicatesToSimpleTerminal(path, result, predicates);
 			}
+			return result.Target;
 		}
 
 		static void ApplyPredicatesToTerminalEnumerable(string path, Result result, IList<INamedPredicate> predicates, ChainStep step)
@@ -402,6 +403,12 @@ namespace DynamicValidation {
 			}
 
 			internal object Target { get; set; }
+
+			/// <summary>
+			/// Value at end of chain. This is the value that gets checked.
+			/// Null if there was a failure in the chain
+			/// </summary>
+			public object ValueChecked { get; set; }
 
 			public void Merge(Result otherResult) {
 				Success &= otherResult.Success;

@@ -94,6 +94,17 @@ namespace DynamicValidation
 					  );
 			}
 		}
+		/// <summary> Always succeeds </summary>
+		public static object BeAnything
+		{
+			get
+			{
+				return new NamedPredicate(
+					  o => true,
+					  o => ""
+					  );
+			}
+		}
 
 		/// <summary> Allows anything but bool == true </summary>
 		public static object NotBeTrue
@@ -223,7 +234,16 @@ namespace DynamicValidation
 
 		public static INamedPredicate BeBefore(DateTime date)
 		{
-			return new NamedPredicate(o => DateIsBefore(o, date), "cannot precede " + date);
+			return new NamedPredicate(o => DateIsBefore(o, date), "should be before " + date);
+		}
+
+		public static INamedPredicate BeBefore(dynamic checkPath)
+		{
+			Check.Result result = checkPath[Should.BeAnything];
+			var dateTime = result.ValueChecked as DateTime?;
+
+			if (dateTime == null) return new NamedPredicate(o =>false, "expected a date");
+			return BeBefore(dateTime.Value);
 		}
 
 		static bool DateIsBefore(object o, DateTime targetDate)

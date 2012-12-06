@@ -36,7 +36,27 @@ namespace DynamicValidation.Tests
 			Check.Result result = Check.That(obj).dates("all")[Should.BeBefore(expectedDate)];
 
 			Assert.That(result.Success, Is.False, result.Reason);
-			Assert.That(result.Reason, Is.StringEnding("cannot precede " + expectedDate));
+			Assert.That(result.Reason, Is.StringEnding("should be before " + expectedDate));
+		}
+
+
+		[Test]
+		public void Should_be_able_to_check_dates_in_one_path_against_dates_in_another_path()
+		{
+			var obj = new
+			{
+				earlier = new {
+					date = new DateTime(1980, 01, 01)
+				},
+				later = new {
+					date = new DateTime(1980, 01, 01)
+				}
+			};
+
+			Check.Result result = Check.That(obj).earlier.date[Should.BeBefore(Check.That(obj).later.date)];
+
+			Assert.That(result.Success, Is.False, result.Reason);
+			Assert.That(result.Reason, Is.StringEnding(".earlier.date should be before 01/01/1980 00:00:00"));
 		}
 	}
 }
