@@ -41,6 +41,17 @@ namespace DynamicValidation.Tests {
 
 			Assert.That(result.Success, Is.True, result.Reason);
 		}
+
+		[Test]
+		public void can_check_against_null_member()
+		{
+			subject.Two.X.Value = null;
+			var result = Check.That(subject).Two.X.Value[Should.Equal(true)];
+
+			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reasons, Contains.Item("BaseThing.Two.X.Value is not equal to True"));
+		}
+
 		[Test]
 		public void can_check_against_a_list_of_acceptable_values_failure_case()
 		{

@@ -68,7 +68,7 @@ namespace DynamicValidation
 		public static INamedPredicate HaveNone(Func<object, bool> predicate, string message)
 		{
 			return new NamedPredicate(
-						o => ! ((IEnumerable<object>)o).Any(predicate),
+						o => !((IEnumerable<object>)o).Any(predicate),
 						o => message
 						);
 		}
@@ -90,7 +90,7 @@ namespace DynamicValidation
 			{
 				return new NamedPredicate(
 					  o => (o as bool?) == true,
-					  o => "expected True but got "+o
+					  o => "expected True but got " + o
 					  );
 			}
 		}
@@ -124,11 +124,11 @@ namespace DynamicValidation
 			{
 				return new NamedPredicate(
 					  o => (o as bool?) == false,
-					  o => "expected False but got "+o
+					  o => "expected False but got " + o
 					  );
 			}
 		}
-		
+
 		/// <summary> Allows anything but bool == false </summary>
 		public static object NotBeFalse
 		{
@@ -146,8 +146,9 @@ namespace DynamicValidation
 			get
 			{
 				return new NamedPredicate(
-					  o => ! string.IsNullOrEmpty(o as string),
-					  o => {
+					  o => !string.IsNullOrEmpty(o as string),
+					  o =>
+					  {
 						  if (o == null) return "is missing";
 						  return (o is string) ? "is empty" : "is not a string";
 					  }
@@ -165,7 +166,7 @@ namespace DynamicValidation
 					  );
 			}
 		}
-		
+
 		public static INamedPredicate BeNull
 		{
 			get
@@ -180,8 +181,8 @@ namespace DynamicValidation
 		public static INamedPredicate Equal(object aValue)
 		{
 			return new NamedPredicate(
-				o => o.Equals(aValue),
-				o => "is not equal to "+aValue
+				o => Equals(o, aValue),
+				o => "is not equal to " + aValue
 				);
 		}
 
@@ -189,7 +190,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 					  o => ((o as string) != null) && ((string)o).Contains(substring),
-					  o => (o is string) ? "did not contain \""+substring+"\"" : "is not a string"
+					  o => (o is string) ? "did not contain \"" + substring + "\"" : "is not a string"
 					  );
 		}
 
@@ -198,7 +199,7 @@ namespace DynamicValidation
 			if (acceptableValues == null) throw new ArgumentException("null values passed to Should.EqualOneOf");
 			return new NamedPredicate(
 					  acceptableValues.Contains,
-					  o => "got \""+o+"\" which is not an acceptable value"
+					  o => "got \"" + o + "\" which is not an acceptable value"
 					  );
 		}
 
@@ -206,8 +207,8 @@ namespace DynamicValidation
 		{
 			if (unacceptableValues == null) throw new ArgumentException("null values passed to Should.NotEqualOneOf");
 			return new NamedPredicate(
-					  o => ! unacceptableValues.Contains(o),
-					  o => "got \""+o+"\" which is not an acceptable value"
+					  o => !unacceptableValues.Contains(o),
+					  o => "got \"" + o + "\" which is not an acceptable value"
 					  );
 		}
 
@@ -241,7 +242,7 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(o => DateIsAfter(o, date), "should be after " + date);
 		}
-		
+
 		public static INamedPredicate BeBefore(dynamic checkPath)
 		{
 			Check.Result result = checkPath[Should.BeAnything];
@@ -289,7 +290,7 @@ namespace DynamicValidation
 
 		static bool DateIsNullOrBefore(object o, DateTime? targetDate)
 		{
-			if(o == null) return true;
+			if (o == null) return true;
 			var date = (DateTime)o;
 			return date < targetDate;
 		}
@@ -305,7 +306,7 @@ namespace DynamicValidation
 			var date = (DateTime)o;
 			return date > targetDate;
 		}
-	
+
 	}
 
 	public static class ShouldExtensions
@@ -318,17 +319,17 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 				o =>
-					{
-						string dummy;
-						return left.Matches(o, out dummy) || right.Matches(o, out dummy);
-					},
+				{
+					string dummy;
+					return left.Matches(o, out dummy) || right.Matches(o, out dummy);
+				},
 				o =>
-					{
-						string leftMsg, rightMsg;
-						left.Matches(o, out leftMsg);
-						right.Matches(o, out rightMsg);
-						return leftMsg + ", " + rightMsg;
-					}
+				{
+					string leftMsg, rightMsg;
+					left.Matches(o, out leftMsg);
+					right.Matches(o, out rightMsg);
+					return leftMsg + ", " + rightMsg;
+				}
 				);
 		}
 	}
