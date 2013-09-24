@@ -7,11 +7,22 @@ using DynamicValidation.Internals;
 using DynamicValidation.Reflection;
 
 namespace DynamicValidation {
+
+	/// <summary>
+	/// Object tree assertion helper. Use the static methods to start building
+	/// validation rules.
+	/// </summary>
 	public class Check : DynamicObject {
+		/// <summary>
+		/// Begin a set of validation rules against a single root object
+		/// </summary>
 		public static dynamic That (object subject) {
 			return new Check(subject);
 		}
 
+		/// <summary>
+		/// Apply a set of `Check.That` cases against a single root object
+		/// </summary>
 		public static Result With(object subject, params Func<dynamic, Result>[] cases)
 		{
 			if (subject is IEnumerable<object>)
@@ -79,6 +90,13 @@ namespace DynamicValidation {
 			return new Check(subject, chain, name);
 		}
 
+		/// <summary>
+		/// Syntax: Check.That....child(enumeration spec)
+		/// Add an enumeration spec to a path item.
+		/// Cases:
+		/// Singular, minima = either like `list(1)` or `list("any")`;
+		/// All with predicate = like `list("all", o => o.something != null)`
+		/// </summary>
 		public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
 		{
 			// we've been passed an enumeration argument
@@ -97,6 +115,10 @@ namespace DynamicValidation {
 			return true;
 		}
 
+		/// <summary>
+		/// Syntax: .parent.child.grandchild
+		/// Add a step in the path to validate
+		/// </summary>
 		public override bool TryGetMember (GetMemberBinder binder, out object result) {
 			// No actual access here, just record the request.
 			result = Add(ChainStep.SimpleStep(binder.Name));
@@ -105,6 +127,10 @@ namespace DynamicValidation {
 		#endregion
 
 		#region Testing object tree
+		/// <summary>
+		/// Syntax: Check.That....[predicate]
+		/// applies predicate to matching paths.
+		/// </summary>
 		public override bool TryGetIndex (GetIndexBinder binder, object[] indexes, out object finalResult) {
 			var result = new Result();
 			finalResult = result;
@@ -378,7 +404,13 @@ namespace DynamicValidation {
 		}
 		#endregion
 
+		/// <summary>
+		/// Results of validations
+		/// </summary>
 		public class Result {
+			/// <summary>
+			/// Create a validation success result
+			/// </summary>
 			public Result()
 			{
 				Success = true;
@@ -414,6 +446,10 @@ namespace DynamicValidation {
 			/// <summary> The entire requested path </summary>
 			public string Path { get; set; }
 
+			/// <summary>
+			/// Join two sets of results together. If either is a failure, the result
+			/// will be a failure.
+			/// </summary>
 			public void Merge(Result otherResult) {
 				Success &= otherResult.Success;
 				Reasons = Reasons.Union(otherResult.Reasons).Distinct().ToList();

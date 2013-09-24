@@ -5,7 +5,7 @@ using DynamicValidation.Internals;
 using DynamicValidation.Reflection;
 using DynamicValidation.SpecialPredicates;
 
-// ReSharper disable PartialTypeWithSinglePart
+// ReSharper disable PartialTypeWithSinglePart, RedundantNameQualifier
 namespace DynamicValidation
 {
 	/// <summary>
@@ -24,6 +24,9 @@ namespace DynamicValidation
 						);
 		}
 
+		/// <summary>
+		/// An enumeration should have at least this many items
+		/// </summary>
 		public static INamedPredicate HaveAtLeast(int n)
 		{
 			return new NamedPredicate(
@@ -32,6 +35,9 @@ namespace DynamicValidation
 						);
 		}
 
+		/// <summary>
+		/// An enumeration should have less than this many items.
+		/// </summary>
 		public static INamedPredicate HaveLessThan(int n)
 		{
 			return new NamedPredicate(
@@ -40,10 +46,17 @@ namespace DynamicValidation
 						);
 		}
 
+		/// <summary>
+		/// Should match a predicate function
+		/// </summary>
 		public static INamedPredicate Be(Func<object, bool> pred, string message)
 		{
 			return new NamedPredicate(pred, o => message);
 		}
+
+		/// <summary>
+		/// Should be of the specified type
+		/// </summary>
 		public static INamedPredicate Be<T>()
 		{
 			return new NamedPredicate(
@@ -52,11 +65,17 @@ namespace DynamicValidation
 					((o == null) ? "null" : (o.GetType().Name)));
 		}
 
+		/// <summary>
+		/// All items in an enumerable should match the predicate
+		/// </summary>
 		public static INamedPredicate AllMatch(INamedPredicate constraint)
 		{
 			return new EnumerablePredicate(constraint);
 		}
 
+		/// <summary>
+		/// All items in an enumerable should match the predicate function
+		/// </summary>
 		public static INamedPredicate AllBe(Func<object, bool> predicate, string message)
 		{
 			return new NamedPredicate(
@@ -64,7 +83,10 @@ namespace DynamicValidation
 						o => message
 						);
 		}
-
+		
+		/// <summary>
+		/// No items in an enumerable should match the predicate function
+		/// </summary>
 		public static INamedPredicate HaveNone(Func<object, bool> predicate, string message)
 		{
 			return new NamedPredicate(
@@ -73,6 +95,9 @@ namespace DynamicValidation
 						);
 		}
 
+		/// <summary>
+		/// Item should not be null
+		/// </summary>
 		public static INamedPredicate NotBeNull
 		{
 			get
@@ -84,7 +109,10 @@ namespace DynamicValidation
 			}
 		}
 
-		public static object BeTrue
+		/// <summary>
+		/// Item should be boolean and true
+		/// </summary>
+		public static INamedPredicate BeTrue
 		{
 			get
 			{
@@ -95,7 +123,7 @@ namespace DynamicValidation
 			}
 		}
 		/// <summary> Always succeeds </summary>
-		public static object BeAnything
+		public static INamedPredicate BeAnything
 		{
 			get
 			{
@@ -107,7 +135,7 @@ namespace DynamicValidation
 		}
 
 		/// <summary> Allows anything but bool == true </summary>
-		public static object NotBeTrue
+		public static INamedPredicate NotBeTrue
 		{
 			get
 			{
@@ -118,7 +146,10 @@ namespace DynamicValidation
 			}
 		}
 
-		public static object BeFalse
+		/// <summary>
+		/// Should be boolean and false
+		/// </summary>
+		public static INamedPredicate BeFalse
 		{
 			get
 			{
@@ -130,7 +161,7 @@ namespace DynamicValidation
 		}
 
 		/// <summary> Allows anything but bool == false </summary>
-		public static object NotBeFalse
+		public static INamedPredicate NotBeFalse
 		{
 			get
 			{
@@ -141,7 +172,10 @@ namespace DynamicValidation
 			}
 		}
 
-		public static object NotBeEmpty
+		/// <summary>
+		/// Should be a non-empty string
+		/// </summary>
+		public static INamedPredicate NotBeEmpty
 		{
 			get
 			{
@@ -156,7 +190,10 @@ namespace DynamicValidation
 			}
 		}
 
-		public static object BeEmpty
+		/// <summary>
+		/// Should be an empty string
+		/// </summary>
+		public static INamedPredicate BeEmpty
 		{
 			get
 			{
@@ -167,6 +204,9 @@ namespace DynamicValidation
 			}
 		}
 
+		/// <summary>
+		/// Should be null
+		/// </summary>
 		public static INamedPredicate BeNull
 		{
 			get
@@ -178,6 +218,9 @@ namespace DynamicValidation
 			}
 		}
 
+		/// <summary>
+		/// Should be equal to the given object
+		/// </summary>
 		public static INamedPredicate Equal(object aValue)
 		{
 			return new NamedPredicate(
@@ -186,6 +229,9 @@ namespace DynamicValidation
 				);
 		}
 
+		/// <summary>
+		/// Should be a string and contain the given substring
+		/// </summary>
 		public static INamedPredicate Contain(string substring)
 		{
 			return new NamedPredicate(
@@ -194,6 +240,9 @@ namespace DynamicValidation
 					  );
 		}
 
+		/// <summary>
+		/// Should be equal to at least one of the given values
+		/// </summary>
 		public static INamedPredicate EqualOneOf(IEnumerable<object> acceptableValues)
 		{
 			if (acceptableValues == null) throw new ArgumentException("null values passed to Should.EqualOneOf");
@@ -203,6 +252,9 @@ namespace DynamicValidation
 					  );
 		}
 
+		/// <summary>
+		/// Should not equal any of the given values
+		/// </summary>
 		public static INamedPredicate NotEqualOneOf(IEnumerable<object> unacceptableValues)
 		{
 			if (unacceptableValues == null) throw new ArgumentException("null values passed to Should.NotEqualOneOf");
@@ -233,16 +285,26 @@ namespace DynamicValidation
 					  );
 		}
 
+		/// <summary>
+		/// Should be a date and earlier than the given date.
+		/// </summary>
 		public static INamedPredicate BeBefore(DateTime date)
 		{
 			return new NamedPredicate(o => DateIsBefore(o, date), "should be before " + date);
 		}
 
+		/// <summary>
+		/// Should be a date and after the given date
+		/// </summary>
 		public static INamedPredicate BeAfter(DateTime date)
 		{
 			return new NamedPredicate(o => DateIsAfter(o, date), "should be after " + date);
 		}
 
+		/// <summary>
+		/// Given two paths, they should both be dates,
+		/// and the left-side should be earlier than the right
+		/// </summary>
 		public static INamedPredicate BeBefore(dynamic checkPath)
 		{
 			Check.Result result = checkPath[Should.BeAnything];
@@ -252,7 +314,11 @@ namespace DynamicValidation
 			if (date == null) return new NamedPredicate(o => false, "expected a date");
 			return new NamedPredicate(o => DateIsBefore(o, date.Value), "should be before " + message);
 		}
-
+		
+		/// <summary>
+		/// Given two paths, they should both be dates,
+		/// and the left-side should be either null or earlier than the right
+		/// </summary>
 		public static INamedPredicate BeNullOrBefore(dynamic checkPath)
 		{
 			Check.Result result = checkPath[Should.BeAnything];
@@ -262,6 +328,10 @@ namespace DynamicValidation
 			return new NamedPredicate(o => DateIsNullOrBefore(o, date), "should be null or before " + message);
 		}
 
+		/// <summary>
+		/// Given two paths, they should both be dates,
+		/// and the left-side should be later than the right
+		/// </summary>
 		public static INamedPredicate BeAfter(dynamic checkPath)
 		{
 			Check.Result result = checkPath[Should.BeAnything];
@@ -271,7 +341,12 @@ namespace DynamicValidation
 			if (date == null) return new NamedPredicate(o => false, "expected a date");
 			return new NamedPredicate(o => DateIsAfter(o, date.Value), "should be after " + message);
 		}
-
+		
+		
+		/// <summary>
+		/// Given two paths, they should both be dates,
+		/// and the left-side should be either null or later than the right
+		/// </summary>
 		public static INamedPredicate BeNullOrAfter(dynamic checkPath)
 		{
 			Check.Result result = checkPath[Should.BeAnything];
@@ -309,6 +384,9 @@ namespace DynamicValidation
 
 	}
 
+	/// <summary>
+	/// Extensions to `Should`
+	/// </summary>
 	public static class ShouldExtensions
 	{
 		/// <summary>
