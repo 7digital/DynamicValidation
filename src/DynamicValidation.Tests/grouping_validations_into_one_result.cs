@@ -43,5 +43,31 @@ namespace DynamicValidation.Tests
 			Assert.That(result.Success, Is.False);
 			Assert.That(result.Reason, Is.EqualTo("X.container[1].a expected True but got False"));
 		}
+
+		[Test]
+		public void can_run_merge_results_to_check_all_pass()
+		{
+			Check.Result result1 = Check.That(subject).container(0).a[Should.BeTrue];
+			Check.Result result2 = Check.That(subject).container(1).a[Should.BeTrue];
+			Check.Result result3 = Check.That(subject).container(2).a[Should.BeTrue];
+
+			var result = result1.Merge(result2.Merge(result3));
+
+			Assert.That(result.Success, Is.False);
+			Assert.That(result.Reason, Is.EqualTo("X.container[1].a expected True but got False"));
+		}
+
+		[Test]
+		public void can_run_merge_results_to_check_any_pass()
+		{
+			Check.Result result1 = Check.That(subject).container(0).a[Should.BeTrue];
+			Check.Result result2 = Check.That(subject).container(1).a[Should.BeTrue];
+			Check.Result result3 = Check.That(subject).container(2).a[Should.BeTrue];
+
+			var result = result1.Or(result2.Or(result3));
+
+			Assert.That(result.Success, Is.True);
+			Assert.That(result.Reason, Is.EqualTo("X.container[1].a expected True but got False"));
+		}
 	}
 }

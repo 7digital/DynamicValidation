@@ -27,17 +27,37 @@ namespace DynamicValidation {
 		{
 			if (subject is IEnumerable<object>)
 			{
-				return WithStems(((IEnumerable<object>)subject).Cast<Check>(), cases);
+				return AllWithStems(((IEnumerable<object>)subject).Cast<Check>(), cases);
 			}
 			if (subject is Check)
 			{
-				return WithStem((Check)subject, cases);
+				return AllWithStem((Check)subject, cases);
 			}
-			return WithSubject(subject, cases);
+			return AllWithSubject(subject, cases);
+		}
+
+		
+		/// <summary>
+		/// Apply a set of `Check.That` cases against a single root object,
+		/// Returning success if at least once case passes.
+		/// Fails if no cases pass.
+		/// Success if all cases pass.
+		/// </summary>
+		public static Result AtLeastOne(object subject, params Func<dynamic, Result>[] cases)
+		{
+			if (subject is IEnumerable<object>)
+			{
+				return AtLeastOneWithStems(((IEnumerable<object>)subject).Cast<Check>(), cases);
+			}
+			if (subject is Check)
+			{
+				return AtLeastOneWithStem((Check)subject, cases);
+			}
+			return AtLeastOneWithSubject(subject, cases);
 		}
 
 		#region group cases
-		static Result WithSubject(object subject, params Func<dynamic, Result>[] cases)
+		static Result AllWithSubject(object subject, params Func<dynamic, Result>[] cases)
 		{
 			var result = new Result();
 			foreach (var check in cases)
@@ -47,7 +67,7 @@ namespace DynamicValidation {
 			return result;
 		}
 
-		static Result WithStems(IEnumerable<Check> subjects, params Func<dynamic, Result>[] cases)
+		static Result AllWithStems(IEnumerable<Check> subjects, params Func<dynamic, Result>[] cases)
 		{
 			var result = new Result();
 			foreach (var subject in subjects)
@@ -60,12 +80,45 @@ namespace DynamicValidation {
 			return result;
 		}
 
-		static Result WithStem(Check subject, params Func<dynamic, Result>[] cases)
+		static Result AllWithStem(Check subject, params Func<dynamic, Result>[] cases)
 		{
 			var result = new Result();
 			foreach (var check in cases)
 			{
 				result.Merge(check(subject));
+			}
+			return result;
+		}
+
+		static Result AtLeastOneWithSubject(object subject, params Func<dynamic, Result>[] cases)
+		{
+			var result = new Result{Success = false};
+			foreach (var check in cases)
+			{
+				result.Or(check(That(subject)));
+			}
+			return result;
+		}
+
+		static Result AtLeastOneWithStems(IEnumerable<Check> subjects, params Func<dynamic, Result>[] cases)
+		{
+			var result = new Result{Success = false};
+			foreach (var subject in subjects)
+			{
+				foreach (var check in cases)
+				{
+					result.Or(check(subject));
+				}
+			}
+			return result;
+		}
+
+		static Result AtLeastOneWithStem(Check subject, params Func<dynamic, Result>[] cases)
+		{
+			var result = new Result{Success = false};
+			foreach (var check in cases)
+			{
+				result.Or(check(subject));
 			}
 			return result;
 		}
@@ -450,9 +503,20 @@ namespace DynamicValidation {
 			/// Join two sets of results together. If either is a failure, the result
 			/// will be a failure.
 			/// </summary>
-			public void Merge(Result otherResult) {
+			public Result Merge(Result otherResult) {
 				Success &= otherResult.Success;
 				Reasons = Reasons.Union(otherResult.Reasons).Distinct().ToList();
+				return this;
+			}
+
+			/// <summary>
+			/// Join two sets of results together. If either is a success, the result
+			/// will be a success.
+			/// </summary>
+			public Result Or(Result otherResult) {
+				Success |= otherResult.Success;
+				Reasons = Reasons.Union(otherResult.Reasons).Distinct().ToList();
+				return this;
 			}
 		}
 	}
