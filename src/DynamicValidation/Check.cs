@@ -515,7 +515,8 @@ namespace DynamicValidation {
 			/// </summary>
 			public Result Or(Result otherResult) {
 				Success |= otherResult.Success;
-				Reasons = Reasons.Union(otherResult.Reasons).Distinct().ToList();
+				Reasons = (!Success) ? Reasons.Union(otherResult.Reasons).Distinct().ToList() : new List<string>();
+				
 				return this;
 			}
 		}

@@ -67,7 +67,7 @@ namespace DynamicValidation.Tests
 			var result = result1.Or(result2.Or(result3));
 
 			Assert.That(result.Success, Is.True);
-			Assert.That(result.Reason, Is.EqualTo("X.container[1].a expected True but got False"));
+			Assert.That(result.Reason, Is.Empty);
 		}
 	}
 }
