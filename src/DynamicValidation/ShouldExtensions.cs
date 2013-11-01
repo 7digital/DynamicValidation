@@ -57,5 +57,36 @@ namespace DynamicValidation
 				);
 
 		}
+
+		
+		/// <summary>
+		/// Applies only to enumerable nodes.
+		/// The source predicate will only be applied to nodes where the filter returns true.
+		/// </summary>
+		/// <param name="source">A predicate, like `Should.Have(3)`</param>
+		/// <param name="filter">A named predicate, only the items that are successful in this predicate will
+		/// be passed to the source. The last item's message will be included in case of source predicate
+		/// failure</param>
+		public static INamedPredicate Where(this INamedPredicate source, INamedPredicate filter)
+		{
+			return new NamedPredicate(
+						o => {
+							string dummy;
+							var filtered = ((IEnumerable<object>)o).Where(
+								a => filter.Matches(a, out dummy));
+							return source.Matches(filtered, out dummy);
+						},
+						o =>
+						{
+							var lastWhereMessage = "";
+							var filtered = ((IEnumerable<object>)o).Where(
+								a => filter.Matches(a, out lastWhereMessage));
+							string message;
+							source.Matches(filtered, out message);
+							return message + " where " + lastWhereMessage;
+						}
+				);
+
+		}
 	}
 }
