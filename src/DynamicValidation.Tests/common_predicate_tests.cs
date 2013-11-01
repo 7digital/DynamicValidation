@@ -76,7 +76,7 @@ namespace DynamicValidation.Tests
 
 			Assert.That(pass.Success);
 			Assert.That(fail.Success, Is.False);
-			Assert.That(fail.Reasons, Contains.Item("Outer.container should have 42 items exactly"));
+			Assert.That(fail.Reasons, Contains.Item("Outer.container should have 42 items exactly, but had 3"));
 		}
 		
 		[Test]

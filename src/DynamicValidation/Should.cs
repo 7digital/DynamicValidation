@@ -20,8 +20,12 @@ namespace DynamicValidation
 		{
 			return new NamedPredicate(
 						o => ((IEnumerable<object>)o).Count() == n,
-						o => (!((IEnumerable<object>)o).Any()) ? "has no items" : ("should have " + n + " items exactly")
-						);
+						o =>
+						{
+							var c = ((IEnumerable<object>)o).Count();
+							return c < 1 ? "has no items" : ("should have " + n + " items exactly, but had " + c);
+						}
+				);
 		}
 
 		/// <summary>
@@ -382,33 +386,5 @@ namespace DynamicValidation
 			return date > targetDate;
 		}
 
-	}
-
-	/// <summary>
-	/// Extensions to `Should`
-	/// </summary>
-	public static class ShouldExtensions
-	{
-		/// <summary>
-		/// Succeeds if either left or right succeeds.
-		/// If both fail, merges and flattens messages.
-		/// </summary>
-		public static INamedPredicate Or(this INamedPredicate left, INamedPredicate right)
-		{
-			return new NamedPredicate(
-				o =>
-				{
-					string dummy;
-					return left.Matches(o, out dummy) || right.Matches(o, out dummy);
-				},
-				o =>
-				{
-					string leftMsg, rightMsg;
-					left.Matches(o, out leftMsg);
-					right.Matches(o, out rightMsg);
-					return leftMsg + ", " + rightMsg;
-				}
-				);
-		}
 	}
 }

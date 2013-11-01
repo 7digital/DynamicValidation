@@ -46,6 +46,7 @@
     <Compile Include="date_validations.cs" />
     <Compile Include="deep_fragment_tests.cs" />
     <Compile Include="enumerables_in_tree_tests.cs" />
+    <Compile Include="filtered_predicates.cs" />
     <Compile Include="grouping_validations_into_one_result.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="simple_object_tree_tests.cs" />
